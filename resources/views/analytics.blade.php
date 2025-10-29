@@ -261,19 +261,51 @@
     </div>
 </div>
 
-<!-- Project Completion Card -->
+<!-- Project Completion Card (Enhanced) -->
 <div class="row mb-4">
     <div class="col-12">
-        <div class="chart-card">
-            <div class="chart-header">
-                <h5 class="chart-title"><i class="fas fa-check-circle me-2 text-success"></i>Daily Project Completions (Last 30 Days)</h5>
-                <div class="d-flex align-items-center">
-                    <span class="badge bg-success me-2">{{ $completedProjects }} Total Completed</span>
-                    <span class="badge bg-info">{{ number_format($completedProjects / max($period, 1), 1) }} per day avg</span>
+        <div class="chart-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 2px solid #10b981; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.15);">
+            <div class="chart-header" style="border-bottom: 2px solid #10b981; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <h5 class="chart-title" style="color: #10b981; font-size: 1.35rem;">
+                    <i class="fas fa-chart-line me-2"></i>Daily Project Completions
+                    <span style="font-size: 0.75rem; font-weight: normal; color: #6c757d; margin-left: 0.5rem;">(Last 30 Days Trend)</span>
+                </h5>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%); font-size: 0.875rem; padding: 0.5rem 1rem;">
+                        <i class="fas fa-check-double me-1"></i>{{ $completedProjects }} Total Completed
+                    </span>
+                    <span class="badge bg-info" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                        <i class="fas fa-calculator me-1"></i>{{ number_format($completedProjects / max($period, 1), 1) }} per day avg
+                    </span>
                 </div>
             </div>
-            <div class="chart-container" style="height: 300px;">
+            <div class="chart-container" style="height: 350px;">
                 <canvas id="projectCompletionChart"></canvas>
+            </div>
+            <div class="mt-3 pt-3 border-top" style="border-color: rgba(16, 185, 129, 0.2) !important;">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="stat-mini">
+                            <i class="fas fa-trophy text-warning" style="font-size: 1.5rem;"></i>
+                            <h5 class="mb-0 mt-2" style="color: #10b981;">{{ max($dailyCompletions->pluck('count')->toArray()) }}</h5>
+                            <small class="text-muted">Peak Day</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-mini">
+                            <i class="fas fa-calendar-check text-success" style="font-size: 1.5rem;"></i>
+                            <h5 class="mb-0 mt-2" style="color: #10b981;">{{ $dailyCompletions->where('count', '>', 0)->count() }}</h5>
+                            <small class="text-muted">Active Days</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-mini">
+                            <i class="fas fa-chart-bar text-info" style="font-size: 1.5rem;"></i>
+                            <h5 class="mb-0 mt-2" style="color: #10b981;">{{ number_format(array_sum($dailyCompletions->pluck('count')->toArray()) / max($dailyCompletions->count(), 1), 1) }}</h5>
+                            <small class="text-muted">Daily Average</small>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -588,7 +620,7 @@ new Chart(priorityCtx, {
     }
 });
 
-// ===== 2B. PROJECT COMPLETION DAILY CHART =====
+// ===== 2B. PROJECT COMPLETION DAILY CHART (ENHANCED LINE GRAPH) =====
 const completionCtx = document.getElementById('projectCompletionChart').getContext('2d');
 const completionData = @json($dailyCompletions);
 const completionLabels = completionData.map(d => {
@@ -597,9 +629,11 @@ const completionLabels = completionData.map(d => {
 });
 const completionCounts = completionData.map(d => d.count);
 
+// Create beautiful gradient for area fill
 const gradientCompletion = completionCtx.createLinearGradient(0, 0, 0, 300);
-gradientCompletion.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
-gradientCompletion.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+gradientCompletion.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+gradientCompletion.addColorStop(0.5, 'rgba(16, 185, 129, 0.2)');
+gradientCompletion.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
 
 new Chart(completionCtx, {
     type: 'line',
@@ -608,32 +642,101 @@ new Chart(completionCtx, {
         datasets: [{
             label: 'Projects Completed',
             data: completionCounts,
-            borderColor: colors.success,
+            borderColor: '#10b981',
             backgroundColor: gradientCompletion,
             borderWidth: 3,
             fill: true,
             tension: 0.4,
-            pointRadius: 6,
+            pointRadius: 5,
             pointHoverRadius: 8,
             pointBackgroundColor: '#fff',
-            pointBorderColor: colors.success,
+            pointBorderColor: '#10b981',
             pointBorderWidth: 3,
-            pointHoverBorderWidth: 4
+            pointHoverBorderWidth: 4,
+            pointHoverBackgroundColor: '#10b981',
+            pointStyle: 'circle',
+            // Add shadow effect
+            shadowOffsetX: 0,
+            shadowOffsetY: 4,
+            shadowBlur: 10,
+            shadowColor: 'rgba(16, 185, 129, 0.3)'
         }]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
         plugins: {
-            legend: { display: false },
+            legend: {
+                display: true,
+                position: 'top',
+                align: 'end',
+                labels: {
+                    usePointStyle: true,
+                    padding: 15,
+                    font: {
+                        size: 12,
+                        weight: '600'
+                    }
+                }
+            },
             tooltip: {
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                padding: 12,
-                cornerRadius: 8,
+                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                padding: 16,
+                cornerRadius: 12,
+                titleFont: {
+                    size: 14,
+                    weight: 'bold'
+                },
+                bodyFont: {
+                    size: 13
+                },
+                displayColors: true,
+                borderColor: '#10b981',
+                borderWidth: 2,
                 callbacks: {
+                    title: function(context) {
+                        return context[0].label;
+                    },
                     label: function(context) {
                         const count = context.parsed.y;
-                        return count + ' project' + (count !== 1 ? 's' : '') + ' completed';
+                        return ' ' + count + ' project' + (count !== 1 ? 's' : '') + ' completed';
+                    },
+                    afterLabel: function(context) {
+                        // Calculate cumulative total up to this date
+                        let cumulative = 0;
+                        for (let i = 0; i <= context.dataIndex; i++) {
+                            cumulative += completionCounts[i];
+                        }
+                        return 'Total so far: ' + cumulative + ' projects';
+                    }
+                }
+            },
+            annotation: {
+                annotations: {
+                    line1: {
+                        type: 'line',
+                        yMin: Math.max(...completionCounts) > 0 ? (completionCounts.reduce((a, b) => a + b, 0) / completionCounts.length) : 0,
+                        yMax: Math.max(...completionCounts) > 0 ? (completionCounts.reduce((a, b) => a + b, 0) / completionCounts.length) : 0,
+                        borderColor: 'rgba(102, 126, 234, 0.5)',
+                        borderWidth: 2,
+                        borderDash: [10, 5],
+                        label: {
+                            display: true,
+                            content: 'Average',
+                            position: 'end',
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                            color: '#fff',
+                            font: {
+                                size: 11,
+                                weight: 'bold'
+                            },
+                            padding: 6,
+                            borderRadius: 6
+                        }
                     }
                 }
             }
@@ -641,14 +744,65 @@ new Chart(completionCtx, {
         scales: {
             y: {
                 beginAtZero: true,
-                grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)',
+                    drawBorder: false
+                },
+                border: {
+                    display: false
+                },
                 ticks: {
                     stepSize: 1,
-                    callback: value => Math.floor(value)
+                    callback: value => Math.floor(value),
+                    font: {
+                        size: 11,
+                        weight: '500'
+                    },
+                    color: '#6c757d'
+                },
+                title: {
+                    display: true,
+                    text: 'Number of Projects',
+                    font: {
+                        size: 12,
+                        weight: '600'
+                    },
+                    color: '#495057'
                 }
             },
             x: {
-                grid: { display: false }
+                grid: {
+                    display: false,
+                    drawBorder: false
+                },
+                border: {
+                    display: false
+                },
+                ticks: {
+                    font: {
+                        size: 11,
+                        weight: '500'
+                    },
+                    color: '#6c757d',
+                    maxRotation: 45,
+                    minRotation: 0
+                },
+                title: {
+                    display: true,
+                    text: 'Date',
+                    font: {
+                        size: 12,
+                        weight: '600'
+                    },
+                    color: '#495057'
+                }
+            }
+        },
+        animation: {
+            duration: 1500,
+            easing: 'easeInOutQuart',
+            onComplete: function() {
+                // Animation complete callback
             }
         }
     }
