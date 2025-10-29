@@ -37,6 +37,7 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     nginx \
+    cron \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -75,6 +76,10 @@ php artisan config:cache\n\
 php artisan route:cache\n\
 php artisan view:cache\n\
 php artisan storage:link || echo "Storage link already exists"\n\
+echo "Starting Laravel Scheduler (cron)..."\n\
+# Start cron for Laravel scheduler\n\
+service cron start\n\
+echo "* * * * * cd /var/www/html && php artisan schedule:run >> /dev/null 2>&1" | crontab -\n\
 echo "Starting PHP-FPM..."\n\
 php-fpm -D\n\
 echo "Starting Nginx..."\n\
