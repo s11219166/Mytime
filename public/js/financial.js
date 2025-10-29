@@ -8,6 +8,9 @@ function financialDashboard() {
         dateRange: '30',
         typeFilter: '',
         categoryFilter: '',
+        
+        // Categories data
+        allCategories: [],
 
         // Form data
         formData: {
@@ -36,9 +39,19 @@ function financialDashboard() {
         // Charts
         incomeExpenseChart: null,
         expenseCategoryChart: null,
+        
+        // Computed: Filtered categories based on selected type
+        get filteredCategories() {
+            if (!this.formData.type) {
+                return this.allCategories;
+            }
+            return this.allCategories.filter(cat => cat.type === this.formData.type);
+        },
 
         // Initialize
         init() {
+            // Load categories from the page
+            this.loadCategories();
             this.loadSummary();
             this.initCharts();
 
@@ -50,6 +63,14 @@ function financialDashboard() {
                     }, 100);
                 }
             });
+        },
+        
+        // Load categories from page data
+        loadCategories() {
+            // Get categories from the data attribute or window object
+            if (window.financialCategories) {
+                this.allCategories = window.financialCategories;
+            }
         },
 
         // Toggle privacy

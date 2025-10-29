@@ -176,13 +176,17 @@
             <!-- Income vs Expense Chart -->
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Income vs Expenses Trend</h3>
-                <canvas id="incomeExpenseChart"></canvas>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="incomeExpenseChart"></canvas>
+                </div>
             </div>
 
             <!-- Expense by Category Chart -->
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Expense Breakdown by Category</h3>
-                <canvas id="expenseCategoryChart"></canvas>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="expenseCategoryChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -318,12 +322,9 @@
                                 required
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Select Category</option>
-                            @foreach($categories as $category)
-                            <option value="{{ $category->id }}"
-                                    x-show="!formData.type || formData.type === '{{ $category->type }}'">
-                                {{ $category->icon }} {{ $category->name }}
-                            </option>
-                            @endforeach
+                            <template x-for="category in filteredCategories" :key="category.id">
+                                <option :value="category.id" x-text="category.icon + ' ' + category.name"></option>
+                            </template>
                         </select>
                     </div>
 
@@ -396,6 +397,17 @@
 </div>
 
 @push('scripts')
+<script>
+    // Pass categories data to JavaScript
+    window.financialCategories = @json($categories->map(function($cat) {
+        return [
+            'id' => $cat->id,
+            'name' => $cat->name,
+            'type' => $cat->type,
+            'icon' => $cat->icon
+        ];
+    }));
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ asset('js/financial.js') }}"></script>
 @endpush
