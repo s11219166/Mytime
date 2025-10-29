@@ -1,0 +1,56 @@
+services:
+  # Web Service
+  - type: web
+    name: mytime-app
+    env: php
+    region: oregon
+    plan: free
+    buildCommand: "./render-build.sh"
+    startCommand: "php artisan serve --host=0.0.0.0 --port=$PORT"
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: error
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: mytime-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: mytime-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: mytime-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: mytime-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: mytime-db
+          property: password
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: FILESYSTEM_DISK
+        value: local
+
+databases:
+  - name: mytime-db
+    plan: free
+    databaseName: mytime
+    user: mytime
