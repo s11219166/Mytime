@@ -128,14 +128,14 @@ class ProjectController extends Controller
         // Create project
         $project = Project::create([
             'name' => $validated['name'],
-            'description' => $validated['description'],
-            'status' => 'active', // Set initial status as active
-            'priority' => $validated['priority'],
-            'budget' => $validated['budget'],
+            'description' => $validated['description'] ?? null,
+            'status' => $validated['status'] ?? 'active',
+            'priority' => $validated['priority'] ?? 'medium',
+            'budget' => $validated['budget'] ?? null,
             'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
+            'end_date' => $validated['end_date'] ?? null,
             'progress' => $validated['progress'] ?? 0,
-            'tags' => $validated['tags'],
+            'tags' => $validated['tags'] ?? null,
             'created_by' => Auth::id(),
             'course_id' => $validated['course_id'] ?? null,
         ]);
@@ -201,11 +201,11 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'status' => 'required|in:active,inactive,completed,inprogress,awaiting_input,cancelled,paused,revision_needed,review_pending,overdue',
-            'priority' => 'required|in:low,medium,high,urgent',
+            'status' => 'nullable|in:active,inactive,completed,inprogress,awaiting_input,cancelled,paused,revision_needed,review_pending,overdue,planning',
+            'priority' => 'nullable|in:low,medium,high,urgent',
             'budget' => 'nullable|numeric|min:0',
             'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after:start_date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'progress' => 'nullable|integer|min:0|max:100',
             'tags' => 'nullable|string',
             'course_id' => 'nullable|exists:courses,id',
