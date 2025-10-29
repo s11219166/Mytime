@@ -14,8 +14,8 @@ git status
 
 Step 3: Add all new deployment files
 ------------------------------------------------------------------
-git add render.yaml Dockerfile nginx.conf .dockerignore
-git add RENDER_DEPLOYMENT_GUIDE.md QUICK_DEPLOY.md DEPLOYMENT_CHECKLIST.md DEPLOYMENT_SUMMARY.md
+git add render.yaml Dockerfile nginx.conf .dockerignore .env.docker
+git add RENDER_DEPLOYMENT_GUIDE.md QUICK_DEPLOY.md DEPLOYMENT_CHECKLIST.md DEPLOYMENT_SUMMARY.md DOCKER_DEPLOYMENT_NOTE.md
 git add config/database.php .gitignore
 
 
