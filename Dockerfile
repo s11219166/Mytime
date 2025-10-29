@@ -1,13 +1,29 @@
-# Use PHP with FPM as base
+# Stage 1: Build frontend assets
+FROM node:20-bullseye-slim AS frontend
+
+WORKDIR /build
+
+# Copy package files first for better caching
+COPY package.json package-lock.json ./
+
+# Install dependencies
+RUN npm ci --legacy-peer-deps
+
+# Copy all necessary files for Vite build
+COPY vite.config.js ./
+COPY resources ./resources
+COPY public ./public
+
+# Create minimal .env file that Vite might need
+RUN echo "APP_NAME=MyTime" > .env
+
+# Build assets
+RUN npm run build
+
+# Stage 2: Main application
 FROM php:8.2-fpm
 
 WORKDIR /var/www/html
-
-# Install Node.js 20.x from binary (more reliable than apt)
-RUN curl -fsSL https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-x64.tar.xz -o node.tar.xz \
-    && tar -xf node.tar.xz -C /usr/local --strip-components=1 \
-    && rm node.tar.xz \
-    && node --version && npm --version
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -31,17 +47,17 @@ RUN docker-php-ext-configure gd \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy application files
+# Copy application files (except node_modules and vendor which are in .dockerignore)
 COPY . .
+
+# Copy the built assets from frontend stage
+COPY --from=frontend /build/public/build ./public/build
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/sites-available/default
 
 # Install Composer dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Install npm dependencies and build
-RUN npm ci --legacy-peer-deps && npm run build
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
