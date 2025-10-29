@@ -8,7 +8,7 @@ function financialDashboard() {
         dateRange: '30',
         typeFilter: '',
         categoryFilter: '',
-        
+
         // Categories data
         allCategories: [],
 
@@ -39,7 +39,7 @@ function financialDashboard() {
         // Charts
         incomeExpenseChart: null,
         expenseCategoryChart: null,
-        
+
         // Computed: Filtered categories based on selected type
         get filteredCategories() {
             if (!this.formData.type) {
@@ -64,7 +64,7 @@ function financialDashboard() {
                 }
             });
         },
-        
+
         // Load categories from page data
         loadCategories() {
             // Get categories from the data attribute or window object

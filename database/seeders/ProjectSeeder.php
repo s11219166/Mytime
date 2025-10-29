@@ -20,6 +20,12 @@ class ProjectSeeder extends Seeder
             $this->command->error('No users found. Please run UserSeeder first.');
             return;
         }
+        
+        // Skip if projects already exist
+        if (Project::count() > 0) {
+            $this->command->info('Projects already exist. Skipping seeding.');
+            return;
+        }
 
         $projects = [
             [

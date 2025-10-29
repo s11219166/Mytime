@@ -14,8 +14,11 @@ class FinancialCategorySeeder extends Seeder
      */
     public function run(): void
     {
-        // Clear existing default categories (user_id is null)
-        FinancialCategory::whereNull('user_id')->delete();
+        // Skip if categories already exist
+        if (FinancialCategory::count() > 0) {
+            $this->command->info('Financial categories already exist. Skipping seeding.');
+            return;
+        }
 
         $categories = [
             // Income Categories
