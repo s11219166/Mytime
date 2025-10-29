@@ -12,6 +12,8 @@ services:
         value: production
       - key: APP_DEBUG
         value: false
+      - key: APP_URL
+        sync: false
       - key: APP_KEY
         generateValue: true
       - key: LOG_CHANNEL
@@ -41,7 +43,9 @@ services:
           name: mytime-db
           property: password
       - key: SESSION_DRIVER
-        value: database
+        value: cookie
+      - key: SESSION_SECURE_COOKIE
+        value: true
       - key: CACHE_STORE
         value: database
       - key: QUEUE_CONNECTION

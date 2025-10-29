@@ -48,7 +48,7 @@ class AnalyticsController extends Controller
         $projectCompletionTrend = $user->getAllProjects()
             ->where('status', 'completed')
             ->where('updated_at', '>=', now()->subMonths(6))
-            ->selectRaw('DATE_FORMAT(updated_at, "%Y-%m") as month, COUNT(*) as count')
+            ->selectRaw("TO_CHAR(updated_at, 'YYYY-MM') as month, COUNT(*) as count")
             ->groupBy('month')
             ->orderBy('month')
             ->get();
