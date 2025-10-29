@@ -1,0 +1,155 @@
+/* Financial Module Styles */
+
+/* Summary Cards */
+.summary-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Transaction Modal */
+.modal-backdrop {
+    backdrop-filter: blur(2px);
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 2rem;
+}
+
+/* Transaction Table */
+.transaction-row:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+.transaction-row .actions {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.transaction-row:hover .actions {
+    opacity: 1;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-badge.completed {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+}
+
+.status-badge.pending {
+    background-color: #FFF3E0;
+    color: #EF6C00;
+}
+
+.status-badge.cancelled {
+    background-color: #FFEBEE;
+    color: #C62828;
+}
+
+/* Type Badges */
+.type-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.type-badge.income {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+}
+
+.type-badge.expense {
+    background-color: #FFEBEE;
+    color: #C62828;
+}
+
+.type-badge.savings {
+    background-color: #E3F2FD;
+    color: #1565C0;
+}
+
+.type-badge.bank_deposit {
+    background-color: #F3E5F5;
+    color: #6A1B9A;
+}
+
+/* Amount Fields */
+.amount-field {
+    font-family: "Roboto Mono", monospace;
+}
+
+.amount-field.income {
+    color: #2E7D32;
+}
+
+.amount-field.expense {
+    color: #C62828;
+}
+
+.amount-field.savings {
+    color: #1565C0;
+}
+
+.amount-field.bank_deposit {
+    color: #6A1B9A;
+}
+
+/* Loading States */
+.loading {
+    position: relative;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 250px;
+    }
+
+    .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none;
+    }
+
+    .chart-container {
+        break-inside: avoid;
+    }
+
+    .transaction-table {
+        break-inside: avoid-page;
+    }
+}

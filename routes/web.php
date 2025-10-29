@@ -12,6 +12,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\FinancialController;
 
 // Redirect root to login
 Route::get('/', function () {
@@ -148,4 +149,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/preferences', [ProfileController::class, 'updatePreferences'])->name('profile.preferences.update');
     Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
     Route::post('/profile/report', [ProfileController::class, 'downloadReport'])->name('profile.report.download');
+
+    // Financial Management Routes
+    Route::get('/financial', [FinancialController::class, 'index'])->name('financial.index');
+    Route::post('/financial/transaction', [FinancialController::class, 'store'])->name('financial.store');
+    Route::put('/financial/transaction/{id}', [FinancialController::class, 'update'])->name('financial.update');
+    Route::delete('/financial/transaction/{id}', [FinancialController::class, 'destroy'])->name('financial.destroy');
+    Route::get('/financial/chart-data', [FinancialController::class, 'getChartData'])->name('financial.chart-data');
+    Route::get('/financial/summary', [FinancialController::class, 'getSummary'])->name('financial.summary');
+    Route::get('/financial/export', [FinancialController::class, 'export'])->name('financial.export');
+    Route::get('/financial/filter', [FinancialController::class, 'filter'])->name('financial.filter');
 });

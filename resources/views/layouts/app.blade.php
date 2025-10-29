@@ -7,6 +7,8 @@
     <title>@yield('title', 'MyTime')</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body {
             background-color: #f8f9fa;
@@ -217,6 +219,12 @@
                 <a href="{{ route('time-logs.index') }}" class="{{ request()->routeIs('time-logs.*') ? 'active' : '' }}">
                     <i class="fas fa-history"></i>
                     <span>Time Logs</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('financial.index') }}" class="{{ request()->routeIs('financial.*') ? 'active' : '' }}">
+                    <i class="fas fa-wallet"></i>
+                    <span>Financial</span>
                 </a>
             </li>
             <li>
