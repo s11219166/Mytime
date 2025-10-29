@@ -1,28 +1,13 @@
-# Build stage for Node assets
-FROM node:20-alpine AS node-builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-COPY vite.config.js ./
-
-# Copy source files needed for build
-COPY resources ./resources
-COPY public ./public
-
-# Create minimal .env for Vite
-RUN echo 'APP_NAME=MyTime' > .env && \
-    echo 'APP_URL=http://localhost' >> .env
-
-# Install dependencies and build
-RUN npm ci --legacy-peer-deps && npm run build
-
-# Main application image
+# Use PHP with FPM as base
 FROM php:8.2-fpm
 
-# Set working directory
 WORKDIR /var/www/html
+
+# Install Node.js 20.x from binary (more reliable than apt)
+RUN curl -fsSL https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-x64.tar.xz -o node.tar.xz \
+    && tar -xf node.tar.xz -C /usr/local --strip-components=1 \
+    && rm node.tar.xz \
+    && node --version && npm --version
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -49,14 +34,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy application files
 COPY . .
 
-# Copy built assets from node-builder stage
-COPY --from=node-builder /app/public/build ./public/build
-
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/sites-available/default
 
-# Install PHP dependencies
+# Install Composer dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Install npm dependencies and build
+RUN npm ci --legacy-peer-deps && npm run build
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
