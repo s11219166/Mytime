@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -93,7 +94,8 @@ class ProjectController extends Controller
         }
 
         $users = User::where('id', '!=', Auth::id())->get();
-        return view('projects.create', compact('users'));
+        $courses = Course::all();
+        return view('projects.create', compact('users', 'courses'));
     }
 
     /**
@@ -111,6 +113,7 @@ class ProjectController extends Controller
             'end_date' => 'nullable|date|after:start_date',
             'progress' => 'nullable|integer|min:0|max:100',
             'tags' => 'nullable|string',
+            'course_id' => 'nullable|exists:courses,id',
             'team_members' => 'nullable|array',
             'team_members.*' => 'exists:users,id',
             'team_roles' => 'nullable|array',
@@ -134,6 +137,7 @@ class ProjectController extends Controller
             'progress' => $validated['progress'] ?? 0,
             'tags' => $validated['tags'],
             'created_by' => Auth::id(),
+            'course_id' => $validated['course_id'] ?? null,
         ]);
 
         // Attach team members
@@ -184,8 +188,9 @@ class ProjectController extends Controller
         }
 
         $users = User::where('id', '!=', Auth::id())->get();
+        $courses = Course::all();
         $project->load('teamMembers');
-        return view('projects.edit', compact('project', 'users'));
+        return view('projects.edit', compact('project', 'users', 'courses'));
     }
 
     /**
@@ -203,6 +208,7 @@ class ProjectController extends Controller
             'end_date' => 'nullable|date|after:start_date',
             'progress' => 'nullable|integer|min:0|max:100',
             'tags' => 'nullable|string',
+            'course_id' => 'nullable|exists:courses,id',
             'team_members' => 'nullable|array',
             'team_members.*' => 'exists:users,id',
             'team_roles' => 'nullable|array',
@@ -225,6 +231,7 @@ class ProjectController extends Controller
             'end_date' => $validated['end_date'],
             'progress' => $validated['progress'] ?? $project->progress,
             'tags' => $validated['tags'],
+            'course_id' => $validated['course_id'] ?? null,
         ]);
 
         // Update team members

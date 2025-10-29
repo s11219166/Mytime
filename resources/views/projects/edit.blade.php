@@ -137,6 +137,22 @@
                     </div>
 
                     <div class="mb-4">
+                        <label for="course_id" class="modern-label">Course</label>
+                        <div class="modern-input-group">
+                            <i class="fas fa-graduation-cap input-icon"></i>
+                            <select class="modern-input" id="course_id" name="course_id">
+                                <option value="">-- No Course --</option>
+                                @foreach($courses as $course)
+                                    <option value="{{ $course->id }}" {{ old('course_id', $project->course_id) == $course->id ? 'selected' : '' }}>
+                                        {{ $course->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <small class="form-text text-muted">Assign this project to a specific course</small>
+                    </div>
+
+                    <div class="mb-4">
                         <label for="progress" class="modern-label">Progress (%)</label>
                         <div class="modern-input-group">
                             <i class="fas fa-tasks input-icon"></i>

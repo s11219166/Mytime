@@ -23,6 +23,7 @@ class Project extends Model
         'progress',
         'tags',
         'created_by',
+        'course_id',
     ];
 
     protected $casts = [
@@ -38,6 +39,14 @@ class Project extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the course this project belongs to
+     */
+    public function course(): BelongsTo
+    {
+        return $this->belongsTo(Course::class);
     }
 
     /**

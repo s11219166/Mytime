@@ -166,6 +166,24 @@
                         </div>
                     </div>
 
+                    <div class="row optional-field">
+                        <div class="col-md-12 mb-4">
+                            <label for="course_id" class="modern-label">Course <span class="text-muted small">(Optional)</span></label>
+                            <div class="modern-input-group">
+                                <i class="fas fa-graduation-cap input-icon"></i>
+                                <select class="modern-input" id="course_id" name="course_id" aria-label="Course">
+                                    <option value="">-- No Course --</option>
+                                    @foreach($courses as $course)
+                                        <option value="{{ $course->id }}" {{ old('course_id') == $course->id ? 'selected' : '' }}>
+                                            {{ $course->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <small class="form-text text-muted">Assign this project to a specific course</small>
+                        </div>
+                    </div>
+
                     <div class="mb-4 optional-field">
                         <label for="tags" class="modern-label">Tags <span class="text-muted small">(Optional)</span></label>
                         <div class="modern-input-group">
