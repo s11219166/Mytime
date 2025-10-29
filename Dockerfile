@@ -1,10 +1,30 @@
-# Use official PHP 8.2 FPM image
+# Build stage for Node assets
+FROM node:20-alpine AS node-builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY vite.config.js ./
+
+# Copy source files needed for build
+COPY resources ./resources
+COPY public ./public
+
+# Create minimal .env for Vite
+RUN echo 'APP_NAME=MyTime' > .env && \
+    echo 'APP_URL=http://localhost' >> .env
+
+# Install dependencies and build
+RUN npm ci --legacy-peer-deps && npm run build
+
+# Main application image
 FROM php:8.2-fpm
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Install system dependencies and Node.js 20.x
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -16,13 +36,6 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     nginx \
-    ca-certificates \
-    gnupg \
-    && mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
-    && apt-get update \
-    && apt-get install -y nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -36,18 +49,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy application files
 COPY . .
 
+# Copy built assets from node-builder stage
+COPY --from=node-builder /app/public/build ./public/build
+
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/sites-available/default
 
-# Create temporary .env for build (will be overridden by Render env vars at runtime)
-RUN if [ ! -f .env ]; then cp .env.example .env; fi \
-    && sed -i 's/APP_KEY=/APP_KEY=base64:placeholder_key_will_be_replaced_by_render/' .env
-
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Install Node dependencies and build assets
-RUN npm ci --legacy-peer-deps && npm run build
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
