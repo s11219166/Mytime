@@ -152,7 +152,8 @@
                 </form>
     </div>
     <div class="modern-card-body">
-        <div class="table-responsive">
+        <!-- Desktop Table View -->
+        <div class="table-responsive d-none d-md-block">
             <table class="modern-table">
                 <thead>
                     <tr>
@@ -335,6 +336,156 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="d-md-none px-3 py-2">
+            @forelse($projects as $project)
+                <div class="mobile-project-card priority-{{ $project->priority }}">
+                    <!-- Header -->
+                    <div class="mobile-project-header">
+                        <div class="project-avatar project-avatar-{{ $project->priority == 'urgent' ? 'danger' : ($project->priority == 'high' ? 'warning' : ($project->priority == 'medium' ? 'info' : 'secondary')) }}">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="mobile-project-info">
+                            <div class="mobile-project-name">{{ $project->name }}</div>
+                            <div class="mobile-project-desc">{{ Str::limit($project->description, 60) }}</div>
+                            @php
+                                $currentStatus = $project->current_status;
+                                $statusColors = [
+                                    'active' => 'success',
+                                    'inprogress' => 'primary',
+                                    'review_pending' => 'warning',
+                                    'revision_needed' => 'info',
+                                    'awaiting_input' => 'info',
+                                    'paused' => 'secondary',
+                                    'overdue' => 'danger',
+                                    'completed' => 'success',
+                                    'cancelled' => 'dark',
+                                ];
+                                $statusIcons = [
+                                    'active' => 'fa-rocket',
+                                    'inprogress' => 'fa-spinner',
+                                    'review_pending' => 'fa-eye',
+                                    'revision_needed' => 'fa-edit',
+                                    'awaiting_input' => 'fa-hourglass-half',
+                                    'paused' => 'fa-pause-circle',
+                                    'overdue' => 'fa-exclamation-triangle',
+                                    'completed' => 'fa-check-circle',
+                                    'cancelled' => 'fa-times-circle',
+                                ];
+                            @endphp
+                            <span class="modern-badge badge-{{ $statusColors[$currentStatus] ?? 'secondary' }} mt-2">
+                                <i class="fas {{ $statusIcons[$currentStatus] ?? 'fa-circle' }} me-1"></i>
+                                {{ ucfirst(str_replace('_', ' ', $currentStatus)) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Meta Info Grid -->
+                    <div class="mobile-project-meta">
+                        <div class="mobile-meta-item">
+                            <div class="mobile-meta-label">Priority</div>
+                            <div class="mobile-meta-value">
+                                <i class="fas fa-flag me-1"></i>{{ ucfirst($project->priority) }}
+                            </div>
+                        </div>
+                        <div class="mobile-meta-item">
+                            <div class="mobile-meta-label">Budget</div>
+                            <div class="mobile-meta-value">
+                                @if($project->budget)
+                                    <i class="fas fa-dollar-sign me-1"></i>${{ number_format($project->budget, 0) }}
+                                @else
+                                    —
+                                @endif
+                            </div>
+                        </div>
+                        <div class="mobile-meta-item">
+                            <div class="mobile-meta-label">Start Date</div>
+                            <div class="mobile-meta-value">
+                                <i class="fas fa-calendar-check me-1"></i>{{ $project->start_date->format('M d, Y') }}
+                            </div>
+                        </div>
+                        <div class="mobile-meta-item">
+                            <div class="mobile-meta-label">End Date</div>
+                            <div class="mobile-meta-value">
+                                @if($project->end_date)
+                                    <i class="fas fa-calendar-times me-1"></i>{{ $project->end_date->format('M d, Y') }}
+                                @else
+                                    —
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress -->
+                    <div class="mobile-progress">
+                        <div class="mobile-progress-header">
+                            <span class="mobile-progress-label">Progress</span>
+                            <span class="mobile-progress-value">{{ $project->progress }}%</span>
+                        </div>
+                        <div class="modern-progress" onclick="openProgressModal({{ $project->id }}, {{ $project->progress }}, '{{ $project->name }}')">
+                            <div class="modern-progress-bar modern-progress-{{ $project->progress >= 75 ? 'success' : ($project->progress >= 50 ? 'info' : ($project->progress >= 25 ? 'warning' : 'danger')) }}"
+                                 style="width: {{ $project->progress }}%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Team -->
+                    @if($project->creator || $project->teamMembers->count() > 0)
+                        <div class="mobile-meta-label mb-2">Team Members</div>
+                        <div class="mobile-team">
+                            @if($project->creator)
+                                <div class="team-avatar team-avatar-primary" title="{{ $project->creator->name }} (Owner)">
+                                    <span>{{ substr($project->creator->name, 0, 1) }}</span>
+                                </div>
+                            @endif
+                            @foreach($project->teamMembers->take(5) as $member)
+                                <div class="team-avatar team-avatar-info" title="{{ $member->name }}">
+                                    <span>{{ substr($member->name, 0, 1) }}</span>
+                                </div>
+                            @endforeach
+                            @if($project->teamMembers->count() > 5)
+                                <div class="team-avatar team-avatar-more">
+                                    <span>+{{ $project->teamMembers->count() - 5 }}</span>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
+                    <!-- Actions -->
+                    <div class="mobile-actions mt-3">
+                        <a href="{{ route('projects.show', $project) }}" class="mobile-btn mobile-btn-primary">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        @if(auth()->user()->isAdmin())
+                            <a href="{{ route('projects.edit', $project) }}" class="mobile-btn mobile-btn-secondary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <form action="{{ route('projects.destroy', $project) }}" method="POST" class="flex-fill" onsubmit="return confirm('Delete this project?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="mobile-btn mobile-btn-danger w-100">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h5 class="empty-title">No projects found</h5>
+                    <p class="empty-description">Get started by creating your first project.</p>
+                    @if(auth()->user()->isAdmin())
+                        <a href="{{ route('projects.create') }}" class="btn btn-gradient-primary">
+                            <i class="fas fa-plus me-2"></i>Create Project
+                        </a>
+                    @endif
+                </div>
+            @endforelse
         </div>
     </div>
     @if($projects->hasPages())
@@ -1072,6 +1223,331 @@
 
 .modal-header.bg-success {
     background: linear-gradient(135deg, #90EE90 0%, #32CD32 100%) !important;
+}
+
+/* ==========================================
+   MOBILE RESPONSIVE STYLES
+   ========================================== */
+
+@media (max-width: 768px) {
+    /* Header */
+    .modern-header {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+
+    .header-icon-wrapper {
+        width: 50px;
+        height: 50px;
+    }
+
+    .header-icon-wrapper i {
+        font-size: 24px;
+    }
+
+    .modern-header h1 {
+        font-size: 1.75rem !important;
+    }
+
+    .btn-gradient-primary {
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    /* Stat Cards */
+    .stat-card-body {
+        padding: 1.25rem;
+        gap: 1rem;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+
+    .stat-number {
+        font-size: 1.75rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    /* Modern Card */
+    .modern-card-header {
+        padding: 1rem;
+    }
+
+    .modern-card-header h4 {
+        font-size: 1rem;
+    }
+
+    /* Search and Filters */
+    .modern-search-box {
+        width: 100%;
+        order: 1;
+    }
+
+    .modern-select {
+        width: 100% !important;
+    }
+
+    .modern-card-header .d-flex {
+        flex-direction: column;
+    }
+
+    .modern-card-header form {
+        width: 100%;
+    }
+
+    /* Table Responsiveness */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Hide table on mobile, show card layout */
+    .modern-table {
+        display: none;
+    }
+
+    /* Mobile Card Layout for Projects */
+    .mobile-project-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        border-left: 4px solid #667eea;
+    }
+
+    .mobile-project-card.priority-urgent {
+        border-left-color: #fa709a;
+    }
+
+    .mobile-project-card.priority-high {
+        border-left-color: #f5576c;
+    }
+
+    .mobile-project-card.priority-medium {
+        border-left-color: #4facfe;
+    }
+
+    .mobile-project-card.priority-low {
+        border-left-color: #6c757d;
+    }
+
+    .mobile-project-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .mobile-project-info {
+        flex: 1;
+    }
+
+    .mobile-project-name {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 0.25rem;
+    }
+
+    .mobile-project-desc {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 0.75rem;
+    }
+
+    .mobile-project-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .mobile-meta-item {
+        background: #f8f9fa;
+        padding: 0.75rem;
+        border-radius: 10px;
+    }
+
+    .mobile-meta-label {
+        font-size: 0.625rem;
+        text-transform: uppercase;
+        color: #6c757d;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+
+    .mobile-meta-value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .mobile-progress {
+        margin-bottom: 1rem;
+    }
+
+    .mobile-progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .mobile-progress-label {
+        font-size: 0.625rem;
+        text-transform: uppercase;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .mobile-progress-value {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #56ab2f;
+    }
+
+    .mobile-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .mobile-btn {
+        flex: 1;
+        padding: 0.625rem 1rem;
+        border-radius: 10px;
+        border: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .mobile-btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .mobile-btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .mobile-btn-danger {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+
+    /* Pagination */
+    .modern-pagination {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .modern-pagination .page-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .pagination-info {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .modern-card-footer .row {
+        flex-direction: column-reverse;
+    }
+
+    /* Modal */
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modal-body {
+        padding: 1.25rem;
+    }
+
+    /* Budget Display */
+    .mobile-meta-item .budget-display {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    /* Timeline */
+    .mobile-meta-item .timeline-display {
+        font-size: 0.75rem;
+    }
+
+    .mobile-meta-item .timeline-display i {
+        font-size: 0.625rem;
+    }
+
+    /* Team Avatars */
+    .mobile-team {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-top: 0.5rem;
+    }
+
+    .mobile-team .team-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 0.625rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 2rem 1rem;
+    }
+
+    .empty-icon {
+        width: 70px;
+        height: 70px;
+    }
+
+    .empty-icon i {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 576px) {
+    .modern-header h1 {
+        font-size: 1.5rem !important;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+    }
+
+    .mobile-project-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .mobile-actions {
+        flex-direction: column;
+    }
+
+    .mobile-btn {
+        width: 100%;
+    }
 }
 </style>
 @endpush

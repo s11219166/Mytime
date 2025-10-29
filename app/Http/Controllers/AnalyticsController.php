@@ -57,7 +57,7 @@ class AnalyticsController extends Controller
         $dailyCompletions = $user->getAllProjects()
             ->where('status', 'completed')
             ->where('updated_at', '>=', now()->subDays(30))
-            ->selectRaw('DATE(updated_at) as date, COUNT(*) as count')
+            ->selectRaw("DATE(updated_at) as date, COUNT(*) as count")
             ->groupBy('date')
             ->orderBy('date')
             ->get();
@@ -90,7 +90,7 @@ class AnalyticsController extends Controller
         // Daily time tracking (last 30 days)
         $dailyTime = TimeEntry::where('user_id', $user->id)
             ->where('start_time', '>=', now()->subDays(30))
-            ->selectRaw('DATE(start_time) as date, SUM(duration_minutes) as total_minutes')
+            ->selectRaw("DATE(start_time) as date, SUM(duration_minutes) as total_minutes")
             ->groupBy('date')
             ->orderBy('date')
             ->get();
@@ -112,7 +112,7 @@ class AnalyticsController extends Controller
         // Hourly distribution (what time of day user works most)
         $hourlyDistribution = TimeEntry::where('user_id', $user->id)
             ->where('start_time', '>=', $startDate)
-            ->selectRaw('HOUR(start_time) as hour, SUM(duration_minutes) as total_minutes')
+            ->selectRaw("EXTRACT(HOUR FROM start_time) as hour, SUM(duration_minutes) as total_minutes")
             ->groupBy('hour')
             ->orderBy('hour')
             ->get();
