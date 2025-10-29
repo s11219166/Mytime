@@ -93,7 +93,7 @@ class NotificationService
         );
 
         // Send email if user has email notifications enabled
-        if ($user->email_notifications) {
+        if (isset($user->email_notifications) && $user->email_notifications) {
             try {
                 Mail::to($user->email)->send(new ProjectDueReminderMail($project, $user, $daysRemaining, $urgencyLevel, $notificationTime));
             } catch (\Exception $e) {
@@ -171,7 +171,7 @@ class NotificationService
 
                 // Notify all team members
                 foreach ($project->teamMembers as $member) {
-                    if ($member->project_updates) {
+                    if (!isset($member->project_updates) || $member->project_updates) {
                         $this->sendProjectDueReminder($project, $member, $daysRemaining, $notificationTime);
                     }
                 }
@@ -211,7 +211,7 @@ class NotificationService
 
         // Notify team members
         foreach ($project->teamMembers as $member) {
-            if ($member->project_updates) {
+            if (!isset($member->project_updates) || $member->project_updates) {
                 $this->createNotification(
                     $member,
                     'project_completed',
@@ -228,7 +228,7 @@ class NotificationService
      */
     public function sendTimeTrackingReminder(User $user): void
     {
-        if ($user->time_reminders) {
+        if (!isset($user->time_reminders) || $user->time_reminders) {
             $this->createNotification(
                 $user,
                 'time_reminder',
