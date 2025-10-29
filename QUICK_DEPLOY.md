@@ -4,19 +4,11 @@
 
 ```bash
 git add .
-git commit -m "Prepare for Render deployment"
+git commit -m "Prepare for Render deployment with Docker"
 git push origin main
 ```
 
-## Step 2: Make Build Script Executable
-
-```bash
-git update-index --chmod=+x render-build.sh
-git commit -m "Make build script executable"
-git push
-```
-
-## Step 3: Create on Render (2 min)
+## Step 2: Create on Render (2 min)
 
 1. Go to https://dashboard.render.com
 2. Click **"New +"** → **"Blueprint"**
@@ -25,7 +17,7 @@ git push
 
 That's it! Wait 10-15 minutes for first deployment.
 
-## Step 4: Login
+## Step 3: Login
 
 Visit your app URL (shown in Render dashboard):
 

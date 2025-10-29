@@ -14,23 +14,17 @@ git status
 
 Step 3: Add all new deployment files
 ------------------------------------------------------------------
-git add render.yaml render-build.sh .env.render Procfile
+git add render.yaml Dockerfile nginx.conf .dockerignore
 git add RENDER_DEPLOYMENT_GUIDE.md QUICK_DEPLOY.md DEPLOYMENT_CHECKLIST.md DEPLOYMENT_SUMMARY.md
 git add config/database.php .gitignore
 
 
 Step 4: Commit the changes
 ------------------------------------------------------------------
-git commit -m "Add Render.com deployment configuration with PostgreSQL support"
+git commit -m "Add Render.com deployment with Docker support"
 
 
-Step 5: Make build script executable (IMPORTANT!)
-------------------------------------------------------------------
-git update-index --chmod=+x render-build.sh
-git commit -m "Make render-build.sh executable for Render deployment"
-
-
-Step 6: Push to GitHub
+Step 5: Push to GitHub
 ------------------------------------------------------------------
 git push origin main
 
@@ -82,9 +76,10 @@ git push origin master
 ==================================================================
 
 If build fails:
-- Check if render-build.sh has execute permissions
+- Check if Dockerfile is present in repository
 - View logs in Render dashboard for specific error
 - Make sure all files were pushed to GitHub
+- Docker builds take longer (10-15 min first time)
 
 If 500 error:
 - Verify APP_KEY is generated in environment variables
