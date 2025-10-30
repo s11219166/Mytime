@@ -328,7 +328,6 @@
                                     </td>
                                 </tr>
                                 @empty
-                                @empty
                                 <tr>
                                     <td colspan="7" class="px-6 py-16 text-center">
                                         <div class="flex flex-col items-center justify-center">
@@ -492,6 +491,7 @@
         </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
@@ -515,4 +515,3 @@
     [x-cloak] { display: none !important; }
 </style>
 @endpush
-@endsection
