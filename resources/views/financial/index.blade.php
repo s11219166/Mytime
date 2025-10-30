@@ -355,8 +355,8 @@
             <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
                 <div class="flex items-center justify-between">
                     <div class="text-sm text-gray-700">
-                        Showing <span class="font-semibold">{{ $transactions->firstItem() }}</span> 
-                        to <span class="font-semibold">{{ $transactions->lastItem() }}</span> 
+                        Showing <span class="font-semibold">{{ $transactions->firstItem() }}</span>
+                        to <span class="font-semibold">{{ $transactions->lastItem() }}</span>
                         of <span class="font-semibold">{{ $transactions->total() }}</span> results
                     </div>
                     <div>

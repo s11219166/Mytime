@@ -106,19 +106,6 @@
                 </div>
 
                 <div class="col-md-4 mb-4">
-                    <div class="card h-100 border-success">
-                        <div class="card-body text-center">
-                            <div class="display-4 text-success mb-3">
-                                <i class="fas fa-graduation-cap"></i>
-                            </div>
-                            <h5 class="card-title">Courses</h5>
-                            <p class="card-text">Access your courses and assessments</p>
-                            <a href="{{ route('courses.index') }}" class="btn btn-success">View Courses</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-4 mb-4">
                     <div class="card h-100 border-info">
                         <div class="card-body text-center">
                             <div class="display-4 text-info mb-3">
@@ -135,11 +122,11 @@
                     <div class="card h-100 border-warning">
                         <div class="card-body text-center">
                             <div class="display-4 text-warning mb-3">
-                                <i class="fas fa-bell"></i>
+                                <i class="fas fa-wallet"></i>
                             </div>
-                            <h5 class="card-title">Notifications</h5>
-                            <p class="card-text">Check your alerts and updates</p>
-                            <a href="{{ route('notifications') }}" class="btn btn-warning">View Notifications</a>
+                            <h5 class="card-title">Financial</h5>
+                            <p class="card-text">Manage your finances and transactions</p>
+                            <a href="{{ route('financial.index') }}" class="btn btn-warning">View Financial</a>
                         </div>
                     </div>
                 </div>
@@ -205,8 +192,8 @@
                         <a href="{{ route('projects.create') }}" class="btn btn-outline-success">
                             <i class="fas fa-plus me-1"></i>New Project
                         </a>
-                        <a href="{{ route('courses.create') }}" class="btn btn-outline-info">
-                            <i class="fas fa-plus me-1"></i>New Course
+                        <a href="{{ route('financial.index') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-wallet me-1"></i>Financial Dashboard
                         </a>
                     </div>
                 </div>

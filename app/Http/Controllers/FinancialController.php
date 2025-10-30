@@ -292,13 +292,13 @@ class FinancialController extends Controller
         $expenseTrend = FinancialTransaction::getTrendPercentage($userId, 'expense', $startDate, $endDate);
         $savingsTrend = FinancialTransaction::getTrendPercentage($userId, 'savings', $startDate, $endDate);
         $bankDepositTrend = FinancialTransaction::getTrendPercentage($userId, 'bank_deposit', $startDate, $endDate);
-        
+
         // Calculate pending transactions
         $pendingTransactions = FinancialTransaction::forUser($userId)
             ->where('status', 'pending')
             ->dateRange($startDate, $endDate)
             ->get();
-        
+
         $pendingCount = $pendingTransactions->count();
         $pendingTotal = $pendingTransactions->sum('amount');
         $pendingIncome = $pendingTransactions->where('type', 'income')->sum('amount');

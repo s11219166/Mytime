@@ -204,12 +204,6 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('courses.index') }}" class="{{ request()->routeIs('courses.*') ? 'active' : '' }}">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span>Marksheet</span>
-                </a>
-            </li>
-            <li>
                 <a href="{{ route('analytics') }}" class="{{ request()->routeIs('analytics') ? 'active' : '' }}">
                     <i class="fas fa-chart-bar"></i>
                     <span>Analytics</span>
@@ -231,18 +225,6 @@
                 <a href="{{ route('inspiration') }}" class="{{ request()->routeIs('inspiration') ? 'active' : '' }}">
                     <i class="fas fa-star-half-alt"></i>
                     <span>Inspiration Hub</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('notifications') }}" class="{{ request()->routeIs('notifications') ? 'active' : '' }}">
-                    <i class="fas fa-bell position-relative"></i>
-                    <span>Notifications</span>
-                    @php
-                        $unreadCount = Auth::user()->notifications()->where('is_read', false)->count();
-                    @endphp
-                    @if($unreadCount > 0)
-                    <span class="notification-badge">{{ $unreadCount }}</span>
-                    @endif
                 </a>
             </li>
             <li>
@@ -278,34 +260,6 @@
                 </button>
 
                 <div class="navbar-nav ms-auto">
-                    <div class="nav-item dropdown position-relative">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-bell"></i>
-                            @php
-                                $unreadCount = Auth::user()->notifications()->where('is_read', false)->count();
-                            @endphp
-                            @if($unreadCount > 0)
-                            <span class="notification-badge">{{ $unreadCount }}</span>
-                            @endif
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            @php
-                                $notifications = Auth::user()->notifications()->orderBy('created_at', 'desc')->take(5)->get();
-                            @endphp
-                            @forelse($notifications as $notification)
-                            <li>
-                                <a class="dropdown-item d-flex flex-column" href="{{ route('notifications') }}">
-                                    <span>{{ $notification->message }}</span>
-                                    <small class="text-muted">{{ $notification->created_at->diffForHumans() }}</small>
-                                </a>
-                            </li>
-                            @empty
-                            <li><a class="dropdown-item" href="#">No new notifications</a></li>
-                            @endforelse
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ route('notifications') }}">View All Notifications</a></li>
-                        </ul>
-                    </div>
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle me-2"></i>
