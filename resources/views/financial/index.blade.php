@@ -192,71 +192,116 @@
 
         <!-- Recent Transactions Table -->
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Recent Transactions</h3>
+            <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-gray-900">Recent Transactions</h3>
+                    <span class="text-sm text-gray-500">Total: {{ $transactions->total() }} transactions</span>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gradient-to-r from-gray-100 to-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                Date
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                Type
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                Category
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                Amount
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                Description
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                Actions
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($transactions as $transaction)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $transaction->transaction_date->format('M d, Y') }}
+                        <tr class="hover:bg-blue-50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ $transaction->transaction_date->format('M d, Y') }}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    {{ $transaction->transaction_date->format('l') }}
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
-                                    @if($transaction->type === 'income') bg-green-100 text-green-800
-                                    @elseif($transaction->type === 'expense') bg-red-100 text-red-800
-                                    @elseif($transaction->type === 'savings') bg-blue-100 text-blue-800
-                                    @else bg-amber-100 text-amber-800 @endif">
-                                    {{ ucfirst($transaction->type) }}
+                                <span class="px-3 py-1.5 inline-flex text-xs leading-5 font-bold rounded-full shadow-sm
+                                    @if($transaction->type === 'income') bg-gradient-to-r from-green-400 to-green-500 text-white
+                                    @elseif($transaction->type === 'expense') bg-gradient-to-r from-red-400 to-red-500 text-white
+                                    @elseif($transaction->type === 'savings') bg-gradient-to-r from-blue-400 to-blue-500 text-white
+                                    @else bg-gradient-to-r from-amber-400 to-amber-500 text-white @endif">
+                                    {{ ucfirst(str_replace('_', ' ', $transaction->type)) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <span>{{ $transaction->category->icon }}</span>
-                                <span class="text-gray-900">{{ $transaction->category->name }}</span>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <span class="text-2xl mr-2">{{ $transaction->category->icon }}</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ $transaction->category->name }}</span>
+                                </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold" x-data
-                                :class="'{{ $transaction->type }}' === 'income' ? 'text-green-600' : 'text-red-600'">
-                                <span x-show="!$root.hideAmounts">${{ number_format($transaction->amount, 2) }}</span>
-                                <span x-show="$root.hideAmounts">****</span>
+                            <td class="px-6 py-4 whitespace-nowrap" x-data>
+                                <div class="text-sm font-bold"
+                                     :class="'{{ $transaction->type }}' === 'income' ? 'text-green-600' : '{{ $transaction->type }}' === 'expense' ? 'text-red-600' : 'text-blue-600'">
+                                    <span x-show="!$root.hideAmounts">${{ number_format($transaction->amount, 2) }}</span>
+                                    <span x-show="$root.hideAmounts" class="text-gray-400">••••</span>
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
-                                    @if($transaction->status === 'completed') bg-green-100 text-green-800
-                                    @elseif($transaction->status === 'pending') bg-yellow-100 text-yellow-800
-                                    @else bg-gray-100 text-gray-800 @endif">
+                                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    @if($transaction->status === 'completed') bg-green-100 text-green-800 border border-green-200
+                                    @elseif($transaction->status === 'pending') bg-yellow-100 text-yellow-800 border border-yellow-200
+                                    @else bg-gray-100 text-gray-800 border border-gray-200 @endif">
                                     {{ ucfirst($transaction->status) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
-                                {{ $transaction->description ?? '-' }}
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-600 max-w-xs truncate" title="{{ $transaction->description }}">
+                                    {{ $transaction->description ?? '-' }}
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <button @click="openEditModal({{ $transaction->id }})"
-                                        class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                                        class="inline-flex items-center px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-md mr-2 transition-colors duration-150">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Edit
+                                </button>
                                 <button @click="deleteTransaction({{ $transaction->id }})"
-                                        class="text-red-600 hover:text-red-900">Delete</button>
+                                        class="inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors duration-150">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    Delete
+                                </button>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                                <div class="text-6xl mb-4">📊</div>
-                                <p class="text-lg">No transactions found</p>
-                                <p class="text-sm mt-2">Start by adding your first transaction</p>
+                            <td colspan="7" class="px-6 py-16 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <svg class="w-24 h-24 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <p class="text-xl font-semibold text-gray-500 mb-2">No transactions found</p>
+                                    <p class="text-sm text-gray-400 mb-4">Start by adding your first transaction</p>
+                                    <button @click="openAddModal()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                                        Add Transaction
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         @endforelse
@@ -264,10 +309,21 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
-            <div class="px-6 py-4 border-t border-gray-200">
-                {{ $transactions->links() }}
+            <!-- Enhanced Pagination -->
+            @if($transactions->hasPages())
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-700">
+                        Showing <span class="font-semibold">{{ $transactions->firstItem() }}</span> 
+                        to <span class="font-semibold">{{ $transactions->lastItem() }}</span> 
+                        of <span class="font-semibold">{{ $transactions->total() }}</span> results
+                    </div>
+                    <div>
+                        {{ $transactions->links() }}
+                    </div>
+                </div>
             </div>
+            @endif
         </div>
     </div>
 
@@ -401,8 +457,15 @@
     // Pass categories data to JavaScript
     window.financialCategories = @json($categories);
 </script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <script src="{{ asset('js/financial.js') }}"></script>
+<script>
+    // Initialize charts after page load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Initializing financial dashboard charts...');
+        // Charts will be initialized by Alpine.js init()
+    });
+</script>
 @endpush
 
 @push('styles')
