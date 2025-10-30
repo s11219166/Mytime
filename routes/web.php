@@ -8,9 +8,6 @@ use App\Http\Controllers\TimeLogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\CourseController;
-use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\FinancialController;
 
@@ -53,16 +50,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/projects/{project}/progress', [ProjectController::class, 'updateProgress'])->name('projects.progress.update');
     Route::post('/projects/{project}/mark-complete', [ProjectController::class, 'markComplete'])->name('projects.mark-complete');
 
-    // Courses Routes
-    Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
-    Route::get('/courses/create', [CourseController::class, 'create'])->name('courses.create');
-    Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');
-    Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
-
-    // Assessments Routes
-    Route::get('/courses/{course}/assessments/create', [AssessmentController::class, 'create'])->name('courses.assessments.create');
-    Route::post('/courses/{course}/assessments', [AssessmentController::class, 'store'])->name('courses.assessments.store');
-
     // Analytics Routes
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 
@@ -73,15 +60,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/time-logs', [TimeLogController::class, 'store'])->name('time-logs.store');
     Route::put('/time-logs/{id}', [TimeLogController::class, 'update'])->name('time-logs.update');
     Route::delete('/time-logs/{id}', [TimeLogController::class, 'destroy'])->name('time-logs.destroy');
-
-    // Notification Routes
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
-    Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
-    Route::get('/notifications/recent', [NotificationController::class, 'getRecent'])->name('notifications.recent');
-    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
-    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
-    Route::post('/notifications/clear-read', [NotificationController::class, 'clearRead'])->name('notifications.clear-read');
 
     // Inspiration Hub Route
     Route::get('/inspiration', function () {
