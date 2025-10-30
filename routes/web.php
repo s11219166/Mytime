@@ -138,3 +138,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/financial/export', [FinancialController::class, 'export'])->name('financial.export');
     Route::get('/financial/filter', [FinancialController::class, 'filter'])->name('financial.filter');
 });
+
+// Test route to check database connection
+Route::get('/test-db', function() {
+    try {
+        $count = \App\Models\FinancialCategory::count();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Database connection is working',
+            'category_count' => $count
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+});
