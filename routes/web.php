@@ -155,3 +155,20 @@ Route::get('/test-db', function() {
         ], 500);
     }
 });
+
+// Test route to check database connection for transactions
+Route::get('/test-transactions', function() {
+    try {
+        $count = \App\Models\FinancialTransaction::count();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Database connection is working',
+            'transaction_count' => $count
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+});
