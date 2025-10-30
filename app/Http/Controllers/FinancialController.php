@@ -301,9 +301,10 @@ class FinancialController extends Controller
             ->get();
 
         $pendingCount = $pendingTransactions->count();
-        $pendingTotal = $pendingTransactions->sum('amount');
         $pendingIncome = $pendingTransactions->where('type', 'income')->sum('amount');
         $pendingExpense = $pendingTransactions->where('type', 'expense')->sum('amount');
+        // Total amount = Income - Expenses for pending transactions
+        $pendingTotal = $pendingIncome - $pendingExpense;
 
         // Net balance = Income - Expenses - ANZ 10984661 (Savings) - ANZ Acc 13674771 (Bank Deposits)
         $netBalance = $income - $expense - $savings - $bankDeposit;

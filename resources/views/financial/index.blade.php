@@ -189,7 +189,7 @@
                         </div>
                         <div>
                             <p class="text-xs text-gray-600">Total Amount</p>
-                            <p class="text-2xl font-bold text-yellow-600" x-text="hideAmounts ? '****' : formatCurrency(summary.pending_total || 0)"></p>
+                            <p class="text-2xl font-bold text-yellow-600" x-text="hideAmounts ? '****' : formatCurrency((summary.pending_income || 0) - (summary.pending_expense || 0))"></p>
                         </div>
                         <div>
                             <p class="text-xs text-gray-600">Income Pending</p>
