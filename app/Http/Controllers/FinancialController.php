@@ -292,17 +292,35 @@ class FinancialController extends Controller
         $expenseTrend = FinancialTransaction::getTrendPercentage($userId, 'expense', $startDate, $endDate);
         $savingsTrend = FinancialTransaction::getTrendPercentage($userId, 'savings', $startDate, $endDate);
         $bankDepositTrend = FinancialTransaction::getTrendPercentage($userId, 'bank_deposit', $startDate, $endDate);
+        
+        // Calculate pending transactions
+        $pendingTransactions = FinancialTransaction::forUser($userId)
+            ->where('status', 'pending')
+            ->dateRange($startDate, $endDate)
+            ->get();
+        
+        $pendingCount = $pendingTransactions->count();
+        $pendingTotal = $pendingTransactions->sum('amount');
+        $pendingIncome = $pendingTransactions->where('type', 'income')->sum('amount');
+        $pendingExpense = $pendingTransactions->where('type', 'expense')->sum('amount');
+
+        // Net balance = Income - Expenses - ANZ 10984661 (Savings) - ANZ Acc 13674771 (Bank Deposits)
+        $netBalance = $income - $expense - $savings - $bankDeposit;
 
         return [
             'income' => $income,
             'expense' => $expense,
             'savings' => $savings,
             'bank_deposit' => $bankDeposit,
-            'net_balance' => $income - $expense,
+            'net_balance' => $netBalance,
             'income_trend' => $incomeTrend,
             'expense_trend' => $expenseTrend,
             'savings_trend' => $savingsTrend,
-            'bank_deposit_trend' => $bankDepositTrend
+            'bank_deposit_trend' => $bankDepositTrend,
+            'pending_count' => $pendingCount,
+            'pending_total' => $pendingTotal,
+            'pending_income' => $pendingIncome,
+            'pending_expense' => $pendingExpense
         ];
     }
 }

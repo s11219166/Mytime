@@ -120,11 +120,11 @@
                 </div>
             </div>
 
-            <!-- Savings Card -->
+            <!-- ANZ 10984661 Card (Savings) -->
             <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <p class="text-blue-100 text-sm font-medium">Total Savings</p>
+                        <p class="text-blue-100 text-sm font-medium">ANZ 10984661</p>
                         <h3 class="text-3xl font-bold mt-2" x-text="hideAmounts ? '****' : formatCurrency(summary.savings)"></h3>
                     </div>
                     <div class="bg-white bg-opacity-20 rounded-lg p-3">
@@ -138,11 +138,11 @@
                 </div>
             </div>
 
-            <!-- Bank Deposits Card -->
+            <!-- ANZ Acc 13674771 Card (Bank Deposits) -->
             <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <p class="text-amber-100 text-sm font-medium">Bank Deposits</p>
+                        <p class="text-amber-100 text-sm font-medium">ANZ Acc 13674771</p>
                         <h3 class="text-3xl font-bold mt-2" x-text="hideAmounts ? '****' : formatCurrency(summary.bank_deposit)"></h3>
                     </div>
                     <div class="bg-white bg-opacity-20 rounded-lg p-3">
@@ -160,14 +160,47 @@
         <!-- Net Balance Card -->
         <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4"
              :class="summary.net_balance >= 0 ? 'border-green-500' : 'border-red-500'">
-            <div class="flex justify-between items-center">
-                <div>
-                    <p class="text-gray-600 text-sm font-medium">Net Balance (Income - Expenses)</p>
-                    <h3 class="text-4xl font-bold mt-2"
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex-1">
+                    <p class="text-gray-600 text-sm font-medium mb-1">Net Balance</p>
+                    <p class="text-xs text-gray-500 mb-2">(Income - Expenses - ANZ 10984661 - ANZ Acc 13674771)</p>
+                    <h3 class="text-4xl font-bold"
                         :class="summary.net_balance >= 0 ? 'text-green-600' : 'text-red-600'"
                         x-text="hideAmounts ? '****' : formatCurrency(summary.net_balance)"></h3>
                 </div>
                 <div class="text-6xl" x-text="summary.net_balance >= 0 ? '📈' : '📉'"></div>
+            </div>
+        </div>
+
+        <!-- Pending Transactions Summary -->
+        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl shadow-lg p-6 mb-8 border-l-4 border-yellow-500">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="text-gray-700 text-lg font-semibold">Pending Transactions</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                        <div>
+                            <p class="text-xs text-gray-600">Count</p>
+                            <p class="text-2xl font-bold text-gray-900" x-text="summary.pending_count || 0"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-600">Total Amount</p>
+                            <p class="text-2xl font-bold text-yellow-600" x-text="hideAmounts ? '****' : formatCurrency(summary.pending_total || 0)"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-600">Income Pending</p>
+                            <p class="text-xl font-bold text-green-600" x-text="hideAmounts ? '****' : formatCurrency(summary.pending_income || 0)"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-600">Expense Pending</p>
+                            <p class="text-xl font-bold text-red-600" x-text="hideAmounts ? '****' : formatCurrency(summary.pending_expense || 0)"></p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -199,114 +232,122 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gradient-to-r from-gray-100 to-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                Date
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                Type
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                Category
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                Amount
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                Status
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                Description
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($transactions as $transaction)
-                        <tr class="hover:bg-blue-50 transition-colors duration-150">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">
-                                    {{ $transaction->transaction_date->format('M d, Y') }}
-                                </div>
-                                <div class="text-xs text-gray-500">
-                                    {{ $transaction->transaction_date->format('l') }}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-3 py-1.5 inline-flex text-xs leading-5 font-bold rounded-full shadow-sm
-                                    @if($transaction->type === 'income') bg-gradient-to-r from-green-400 to-green-500 text-white
-                                    @elseif($transaction->type === 'expense') bg-gradient-to-r from-red-400 to-red-500 text-white
-                                    @elseif($transaction->type === 'savings') bg-gradient-to-r from-blue-400 to-blue-500 text-white
-                                    @else bg-gradient-to-r from-amber-400 to-amber-500 text-white @endif">
-                                    {{ ucfirst(str_replace('_', ' ', $transaction->type)) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <span class="text-2xl mr-2">{{ $transaction->category->icon }}</span>
-                                    <span class="text-sm font-medium text-gray-900">{{ $transaction->category->name }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap" x-data>
-                                <div class="text-sm font-bold"
-                                     :class="'{{ $transaction->type }}' === 'income' ? 'text-green-600' : '{{ $transaction->type }}' === 'expense' ? 'text-red-600' : 'text-blue-600'">
-                                    <span x-show="!$root.hideAmounts">${{ number_format($transaction->amount, 2) }}</span>
-                                    <span x-show="$root.hideAmounts" class="text-gray-400">••••</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
-                                    @if($transaction->status === 'completed') bg-green-100 text-green-800 border border-green-200
-                                    @elseif($transaction->status === 'pending') bg-yellow-100 text-yellow-800 border border-yellow-200
-                                    @else bg-gray-100 text-gray-800 border border-gray-200 @endif">
-                                    {{ ucfirst($transaction->status) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-600 max-w-xs truncate" title="{{ $transaction->description }}">
-                                    {{ $transaction->description ?? '-' }}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button @click="openEditModal({{ $transaction->id }})"
-                                        class="inline-flex items-center px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-md mr-2 transition-colors duration-150">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                    </svg>
-                                    Edit
-                                </button>
-                                <button @click="deleteTransaction({{ $transaction->id }})"
-                                        class="inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors duration-150">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-16 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <svg class="w-24 h-24 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    <p class="text-xl font-semibold text-gray-500 mb-2">No transactions found</p>
-                                    <p class="text-sm text-gray-400 mb-4">Start by adding your first transaction</p>
-                                    <button @click="openAddModal()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
-                                        Add Transaction
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <div class="overflow-x-auto -mx-4 sm:mx-0">
+                <div class="inline-block min-w-full align-middle">
+                    <div class="overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gradient-to-r from-gray-100 to-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Date
+                                    </th>
+                                    <th scope="col" class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Type
+                                    </th>
+                                    <th scope="col" class="hidden md:table-cell px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Category
+                                    </th>
+                                    <th scope="col" class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Amount
+                                    </th>
+                                    <th scope="col" class="hidden lg:table-cell px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th scope="col" class="hidden xl:table-cell px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Description
+                                    </th>
+                                    <th scope="col" class="px-3 sm:px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse($transactions as $transaction)
+                                <tr class="hover:bg-blue-50 transition-colors duration-150">
+                                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ $transaction->transaction_date->format('M d, Y') }}
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            {{ $transaction->transaction_date->format('l') }}
+                                        </div>
+                                    </td>
+                                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 sm:px-3 py-1.5 inline-flex text-xs leading-5 font-bold rounded-full shadow-sm
+                                            @if($transaction->type === 'income') bg-gradient-to-r from-green-400 to-green-500 text-white
+                                            @elseif($transaction->type === 'expense') bg-gradient-to-r from-red-400 to-red-500 text-white
+                                            @elseif($transaction->type === 'savings') bg-gradient-to-r from-blue-400 to-blue-500 text-white
+                                            @else bg-gradient-to-r from-amber-400 to-amber-500 text-white @endif">
+                                            <span class="hidden sm:inline">{{ ucfirst(str_replace('_', ' ', $transaction->type)) }}</span>
+                                            <span class="sm:hidden">{{ substr(ucfirst($transaction->type), 0, 3) }}</span>
+                                        </span>
+                                    </td>
+                                    <td class="hidden md:table-cell px-3 sm:px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <span class="text-xl sm:text-2xl mr-2">{{ $transaction->category->icon }}</span>
+                                            <span class="text-sm font-medium text-gray-900">{{ $transaction->category->name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap" x-data>
+                                        <div class="text-sm font-bold"
+                                             :class="'{{ $transaction->type }}' === 'income' ? 'text-green-600' : '{{ $transaction->type }}' === 'expense' ? 'text-red-600' : 'text-blue-600'">
+                                            <span x-show="!$root.hideAmounts">${{ number_format($transaction->amount, 2) }}</span>
+                                            <span x-show="$root.hideAmounts" class="text-gray-400">••••</span>
+                                        </div>
+                                    </td>
+                                    <td class="hidden lg:table-cell px-3 sm:px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                                            @if($transaction->status === 'completed') bg-green-100 text-green-800 border border-green-200
+                                            @elseif($transaction->status === 'pending') bg-yellow-100 text-yellow-800 border border-yellow-200
+                                            @else bg-gray-100 text-gray-800 border border-gray-200 @endif">
+                                            {{ ucfirst($transaction->status) }}
+                                        </span>
+                                    </td>
+                                    <td class="hidden xl:table-cell px-3 sm:px-6 py-4">
+                                        <div class="text-sm text-gray-600 max-w-xs truncate" title="{{ $transaction->description }}">
+                                            {{ $transaction->description ?? '-' }}
+                                        </div>
+                                    </td>
+                                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex flex-col sm:flex-row gap-1 sm:gap-2 items-end sm:items-center justify-end">
+                                            <button @click="openEditModal({{ $transaction->id }})"
+                                                    class="inline-flex items-center px-2 sm:px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-md transition-colors duration-150 text-xs">
+                                                <svg class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                                <span class="hidden sm:inline">Edit</span>
+                                            </button>
+                                            <button @click="deleteTransaction({{ $transaction->id }})"
+                                                    class="inline-flex items-center px-2 sm:px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors duration-150 text-xs">
+                                                <svg class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                                <span class="hidden sm:inline">Delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                @empty
+                                <tr>
+                                    <td colspan="7" class="px-6 py-16 text-center">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <svg class="w-24 h-24 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            <p class="text-xl font-semibold text-gray-500 mb-2">No transactions found</p>
+                                            <p class="text-sm text-gray-400 mb-4">Start by adding your first transaction</p>
+                                            <button @click="openAddModal()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                                                Add Transaction
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <!-- Enhanced Pagination -->
