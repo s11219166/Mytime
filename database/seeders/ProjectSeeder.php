@@ -15,12 +15,12 @@ class ProjectSeeder extends Seeder
     {
         // Get the first user (admin) to assign as creator
         $admin = User::first();
-        
+
         if (!$admin) {
             $this->command->error('No users found. Please run UserSeeder first.');
             return;
         }
-        
+
         // Skip if projects already exist
         if (Project::count() > 0) {
             $this->command->info('Projects already exist. Skipping seeding.');

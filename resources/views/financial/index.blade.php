@@ -399,14 +399,7 @@
 @push('scripts')
 <script>
     // Pass categories data to JavaScript
-    window.financialCategories = @json($categories->map(function($cat) {
-        return [
-            'id' => $cat->id,
-            'name' => $cat->name,
-            'type' => $cat->type,
-            'icon' => $cat->icon
-        ];
-    }));
+    window.financialCategories = @json($categories);
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ asset('js/financial.js') }}"></script>
