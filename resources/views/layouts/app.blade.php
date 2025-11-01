@@ -162,6 +162,25 @@
             justify-content: center;
         }
 
+        .notification-item.unread {
+            background-color: #f0fff4;
+        }
+
+        .notification-icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        #notificationDropdownMenu {
+            width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -173,6 +192,12 @@
 
             .main-content {
                 margin-left: 0;
+            }
+
+            #notificationDropdownMenu {
+                width: 300px;
+                right: 0;
+                left: auto;
             }
         }
     </style>
@@ -213,6 +238,12 @@
                 <a href="{{ route('time-logs.index') }}" class="{{ request()->routeIs('time-logs.*') ? 'active' : '' }}">
                     <i class="fas fa-history"></i>
                     <span>Time Logs</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('notifications') }}" class="{{ request()->routeIs('notifications') ? 'active' : '' }}">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
                 </a>
             </li>
             <li>
@@ -260,6 +291,31 @@
                 </button>
 
                 <div class="navbar-nav ms-auto">
+                    <!-- Notification Dropdown -->
+                    <div class="nav-item dropdown me-3">
+                        <a class="nav-link dropdown-toggle position-relative" href="#" role="button" data-bs-toggle="dropdown" id="notificationDropdown">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge d-none" id="notificationCount">0</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" id="notificationDropdownMenu">
+                            <li class="dropdown-header">Notifications</li>
+                            <li><hr class="dropdown-divider"></li>
+                            <div id="notificationList">
+                                <!-- Notifications will be loaded here -->
+                                <li class="text-center p-3">
+                                    <i class="fas fa-bell-slash text-muted"></i>
+                                    <p class="mb-0 text-muted">No new notifications</p>
+                                </li>
+                            </div>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-center" href="{{ route('notifications') }}">
+                                    <i class="fas fa-envelope me-2"></i>View All Notifications
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle me-2"></i>
@@ -326,6 +382,121 @@
                 sidebar.classList.toggle('show');
             });
         }
+
+        // Real-time notification functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch initial notification count
+            fetchNotificationCount();
+
+            // Fetch initial notifications
+            fetchLatestNotifications();
+
+            // Set up polling for real-time updates (every 30 seconds)
+            setInterval(fetchNotificationCount, 30000);
+            setInterval(fetchLatestNotifications, 30000);
+
+            // Also check when dropdown is opened
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            if (notificationDropdown) {
+                notificationDropdown.addEventListener('click', function() {
+                    fetchLatestNotifications();
+                });
+            }
+        });
+
+        function fetchNotificationCount() {
+            fetch('/notifications/unread-count')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('notificationCount');
+                    if (badge) {
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.classList.remove('d-none');
+                        } else {
+                            badge.classList.add('d-none');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching notification count:', error);
+                });
+        }
+
+        function fetchLatestNotifications() {
+            fetch('/notifications/latest')
+                .then(response => response.json())
+                .then(data => {
+                    updateNotificationDropdown(data.notifications, data.unread_count);
+                })
+                .catch(error => {
+                    console.error('Error fetching notifications:', error);
+                });
+        }
+
+        function updateNotificationDropdown(notifications, unreadCount) {
+            const notificationList = document.getElementById('notificationList');
+            const badge = document.getElementById('notificationCount');
+
+            // Update badge
+            if (badge) {
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount;
+                    badge.classList.remove('d-none');
+                } else {
+                    badge.classList.add('d-none');
+                }
+            }
+
+            // Update notification list
+            if (notificationList) {
+                if (notifications.length > 0) {
+                    notificationList.innerHTML = notifications.map(notification => `
+                        <li class="notification-item ${notification.is_read ? '' : 'unread'}">
+                            <a class="dropdown-item" href="${notification.project_id ? '/projects/' + notification.project_id : '#'}">
+                                <div class="d-flex align-items-start">
+                                    <div class="notification-icon bg-${notification.color} text-white rounded-circle me-2">
+                                        <i class="fas ${notification.icon}"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">${notification.title}</h6>
+                                        <p class="mb-1 small text-muted">${notification.message}</p>
+                                        <small class="text-muted">${notification.created_at}</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                    `).join('');
+                } else {
+                    notificationList.innerHTML = `
+                        <li class="text-center p-3">
+                            <i class="fas fa-bell-slash text-muted"></i>
+                            <p class="mb-0 text-muted">No new notifications</p>
+                        </li>
+                    `;
+                }
+            }
+        }
+
+        // Mark notification as read when clicked
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.notification-item')) {
+                const notificationItem = e.target.closest('.notification-item');
+                notificationItem.classList.remove('unread');
+
+                // Update badge count
+                const badge = document.getElementById('notificationCount');
+                if (badge && !badge.classList.contains('d-none')) {
+                    let count = parseInt(badge.textContent);
+                    if (count > 1) {
+                        badge.textContent = count - 1;
+                    } else {
+                        badge.classList.add('d-none');
+                    }
+                }
+            }
+        });
     </script>
     @stack('scripts')
 </body>

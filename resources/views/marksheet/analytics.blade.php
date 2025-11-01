@@ -1,3 +1,9 @@
+<?php
+
+use Illuminate\Support\Facades\Schedule;
+
+// This will run the command every day at 9:00 AM server time.
+Schedule::command('projects:check-due-dates')->dailyAt('09:00');
 @extends('layouts.app')
 
 @section('content')

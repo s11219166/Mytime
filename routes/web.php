@@ -137,6 +137,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/financial/summary', [FinancialController::class, 'getSummary'])->name('financial.summary');
     Route::get('/financial/export', [FinancialController::class, 'export'])->name('financial.export');
     Route::get('/financial/filter', [FinancialController::class, 'filter'])->name('financial.filter');
+
+    // Notification Routes
+    Route::get('/notifications', function () {
+        $notifications = Auth::user()->notifications()->latest()->paginate(10);
+        $unreadCount = Auth::user()->notifications()->where('is_read', false)->count();
+        return view('notifications', compact('notifications', 'unreadCount'));
+    })->name('notifications');
+
+    Route::post('/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
+    Route::post('/notifications/mark-multiple-read', [\App\Http\Controllers\NotificationController::class, 'markMultipleAsRead'])->name('notifications.mark-multiple-read');
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
+    Route::delete('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy']);
+    Route::post('/notifications/clear-read', [\App\Http\Controllers\NotificationController::class, 'clearRead'])->name('notifications.clear-read');
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'getUnreadCount']);
+    Route::get('/notifications/latest', [\App\Http\Controllers\NotificationController::class, 'getLatest']);
 });
 
 // Test route to check database connection
