@@ -6,20 +6,20 @@
 <div class="container-fluid px-0 px-md-2">
     <div class="row g-3 g-md-4">
         <div class="col-12">
-            <div class="p-3 p-md-4 rounded-3" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+            <div class="p-3 p-md-4 rounded-3" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-top: 4px solid #10b981;">
                 <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-3" style="width:56px;height:56px;background:#10b981;color:#fff;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-3" style="width:56px;height:56px;background:linear-gradient(135deg, #10b981 0%, #059669 100%);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.3);">
                             <i class="fas fa-plus"></i>
                         </div>
                         <div>
-                            <h1 class="h4 h-md-3 mb-1 text-success-emphasis" style="color:#065f46 !important;">Create Project</h1>
-                            <p class="mb-0" style="color:#047857;">Add a new project with proper dates. Optimized for mobile.</p>
+                            <h1 class="h4 h-md-3 mb-1" style="color:#065f46 !important;">Create New Project</h1>
+                            <p class="mb-0" style="color:#047857;"><i class="fas fa-mobile-alt me-2"></i>Mobile-optimized form with proper date handling</p>
                         </div>
                     </div>
                     <div class="d-flex gap-2 w-100 w-md-auto">
                         <a href="{{ route('projects.index') }}" class="btn btn-outline-success w-100 w-md-auto">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Projects
+                            <i class="fas fa-arrow-left me-2"></i>Back
                         </a>
                     </div>
                 </div>

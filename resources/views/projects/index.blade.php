@@ -3,26 +3,26 @@
 @section('title', 'Projects - MyTime')
 
 @section('content')
-<!-- Modern Header with Gradient -->
-<div class="modern-header mb-5">
+<!-- Modern Header with Light Green Gradient -->
+<div class="modern-header mb-5" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-top: 4px solid #10b981;">
     <div class="container-fluid">
         <div class="row align-items-center">
             <div class="col-lg-6">
                 <div class="header-content">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="header-icon-wrapper">
+                        <div class="header-icon-wrapper" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 12px rgba(16,185,129,.3);">
                             <i class="fas fa-layer-group"></i>
                         </div>
                         <div class="ms-3">
-                            <h1 class="display-5 fw-bold mb-0 text-gradient">Projects</h1>
-                            <p class="text-muted mb-0">{{ auth()->user()->isAdmin() ? 'Manage and track all projects' : 'View and track your assigned projects' }}</p>
+                            <h1 class="display-5 fw-bold mb-0" style="color:#065f46;">Projects</h1>
+                            <p class="mb-0" style="color:#047857;">{{ auth()->user()->isAdmin() ? 'Manage and track all projects' : 'View and track your assigned projects' }}</p>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-6 text-lg-end">
                 @if(auth()->user()->isAdmin())
-                    <a href="{{ route('projects.create') }}" class="btn btn-gradient-primary btn-lg">
+                    <a href="{{ route('projects.create') }}" class="btn btn-success btn-lg">
                         <i class="fas fa-plus me-2"></i>Create New Project
                     </a>
                 @endif

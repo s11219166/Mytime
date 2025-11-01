@@ -270,3 +270,23 @@ Route::get('/test-transactions', function() {
         ], 500);
     }
 });
+
+// Clear all projects (admin only - for debugging)
+Route::get('/admin/clear-projects', function() {
+    if (!Auth::check() || !Auth::user()->isAdmin()) {
+        return response()->json(['error' => 'Unauthorized'], 403);
+    }
+    try {
+        $count = \App\Models\Project::count();
+        \App\Models\Project::truncate();
+        return response()->json([
+            'status' => 'success',
+            'message' => "Successfully deleted {$count} projects from the database."
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+})->name('admin.clear-projects');
