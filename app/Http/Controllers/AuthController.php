@@ -39,7 +39,9 @@ class AuthController extends Controller
             
             $user = Auth::user();
             
-            // Record admin session on login
+            // TODO: Record admin session on login - COMMENTED OUT FOR LATER IMPLEMENTATION
+            // Uncomment the code below when ready to implement admin session tracking
+            /*
             if ($user->isAdmin()) {
                 AdminSession::create([
                     'user_id' => $user->id,
@@ -49,6 +51,7 @@ class AuthController extends Controller
                     'started_at' => now(),
                 ]);
             }
+            */
             
             // Redirect based on user role
             if ($user->isAdmin()) {
@@ -70,7 +73,9 @@ class AuthController extends Controller
     {
         $user = Auth::user();
         
-        // Record admin session end on logout
+        // TODO: Record admin session end on logout - COMMENTED OUT FOR LATER IMPLEMENTATION
+        // Uncomment the code below when ready to implement admin session tracking
+        /*
         if ($user && $user->isAdmin()) {
             AdminSession::where('user_id', $user->id)
                 ->whereNull('ended_at')
@@ -78,6 +83,7 @@ class AuthController extends Controller
                 ->first()
                 ?->update(['ended_at' => now()]);
         }
+        */
         
         Auth::logout();
         
