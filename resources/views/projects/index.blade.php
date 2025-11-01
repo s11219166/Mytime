@@ -305,13 +305,9 @@
                                         <a href="{{ route('projects.edit', $project) }}" class="btn-action btn-action-secondary" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this project?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn-action btn-action-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn-action btn-action-danger" title="Delete" onclick="deleteProject({{ $project->id }}, '{{ $project->name }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     @endif
                                 </div>
                             </td>
@@ -1677,6 +1673,20 @@ function updateProgress() {
         console.error('Error:', error);
         showToast('Error updating progress', 'danger');
     });
+}
+
+function deleteProject(projectId, projectName) {
+    if (confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/projects/${projectId}`;
+        form.innerHTML = `
+            @csrf
+            @method('DELETE')
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
 }
 
 function showToast(message, type = 'info') {
