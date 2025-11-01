@@ -3,19 +3,19 @@
 @section('title', 'Projects - MyTime')
 
 @section('content')
-<!-- Modern Header with Light Green Gradient -->
-<div class="modern-header mb-5" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-top: 4px solid #10b981;">
+<!-- Modern Header with Purple Gradient -->
+<div class="modern-header mb-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-top: 4px solid #667eea;">
     <div class="container-fluid">
         <div class="row align-items-center">
             <div class="col-lg-6">
                 <div class="header-content">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="header-icon-wrapper" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 12px rgba(16,185,129,.3);">
+                        <div class="header-icon-wrapper" style="background: rgba(255, 255, 255, 0.2); box-shadow: 0 4px 12px rgba(102,126,234,.3);">
                             <i class="fas fa-layer-group"></i>
                         </div>
                         <div class="ms-3">
-                            <h1 class="display-5 fw-bold mb-0" style="color:#065f46;">Projects</h1>
-                            <p class="mb-0" style="color:#047857;">{{ auth()->user()->isAdmin() ? 'Manage and track all projects' : 'View and track your assigned projects' }}</p>
+                            <h1 class="display-5 fw-bold mb-0" style="color:white;">Projects</h1>
+                            <p class="mb-0" style="color:rgba(255,255,255,0.9);">{{ auth()->user()->isAdmin() ? 'Manage and track all projects' : 'View and track your assigned projects' }}</p>
                         </div>
                     </div>
                 </div>
