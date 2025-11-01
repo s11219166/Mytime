@@ -322,3 +322,23 @@ Route::get('/clear-cache', function() {
         'message' => 'Cache, config, and views cleared successfully.'
     ]);
 })->name('clear-cache');
+
+// Fix 419 error - clear sessions table
+Route::get('/fix-419', function() {
+    try {
+        if (\Illuminate\Support\Facades\Schema::hasTable('sessions')) {
+            \Illuminate\Support\Facades\DB::table('sessions')->truncate();
+        }
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Sessions cleared. Try logging in again.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+})->name('fix-419');
