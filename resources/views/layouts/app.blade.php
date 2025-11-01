@@ -11,7 +11,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #f0fdf4 0%, #f0f9ff 100%);
+            background: linear-gradient(135deg, #E8F4FD 0%, #f0f9ff 100%);
             min-height: 100vh;
         }
 
@@ -21,11 +21,11 @@
             left: 0;
             height: 100vh;
             width: 250px;
-            background: linear-gradient(180deg, #10b981 0%, #059669 50%, #047857 100%);
+            background: linear-gradient(180deg, #3BAFDA 0%, #2F86C0 50%, #256EA6 100%);
             color: white;
             transition: all 0.3s ease;
             z-index: 1000;
-            box-shadow: 4px 0 20px rgba(16, 185, 129, 0.3);
+            box-shadow: 4px 0 20px rgba(59, 175, 218, 0.3);
             overflow-y: auto;
         }
 
@@ -36,7 +36,7 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, #34d399, #6ee7b7, #a7f3d0);
+            background: linear-gradient(90deg, #5EC2E6, #9BD9F0, #CFF0FF);
             animation: shimmer 3s infinite;
         }
 
@@ -64,7 +64,7 @@
             left: 0;
             right: 0;
             height: 2px;
-            background: linear-gradient(90deg, transparent, #34d399, transparent);
+            background: linear-gradient(90deg, transparent, #5EC2E6, transparent);
         }
 
         .sidebar-header h3 {
@@ -76,7 +76,7 @@
         }
 
         .sidebar-header i {
-            color: #a7f3d0;
+            color: #CFF0FF;
             margin-right: 0.5rem;
         }
 
@@ -117,7 +117,7 @@
             top: 0;
             bottom: 0;
             width: 4px;
-            background: linear-gradient(180deg, #34d399, #6ee7b7);
+            background: linear-gradient(180deg, #5EC2E6, #9BD9F0);
             transform: scaleY(0);
             transition: transform 0.3s ease;
         }
@@ -134,9 +134,9 @@
 
         .sidebar-menu a.active {
             background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
-            color: #a7f3d0;
+            color: #CFF0FF;
             font-weight: 600;
-            border-right: 3px solid #34d399;
+            border-right: 3px solid #5EC2E6;
         }
 
         .sidebar-menu a.active::before {
@@ -153,7 +153,7 @@
 
         .sidebar-menu a:hover i,
         .sidebar-menu a.active i {
-            color: #34d399;
+            color: #5EC2E6;
             transform: scale(1.15);
         }
 
@@ -172,10 +172,10 @@
         }
 
         .navbar {
-            background: linear-gradient(90deg, #ffffff 0%, #f0fdf4 100%) !important;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+            background: linear-gradient(90deg, #ffffff 0%, #E8F4FD 100%) !important;
+            box-shadow: 0 4px 12px rgba(59, 175, 218, 0.15);
             border: none;
-            border-bottom: 2px solid #d1fae5;
+            border-bottom: 2px solid #B9E2F7;
             position: relative;
         }
 
@@ -186,33 +186,33 @@
             left: 0;
             right: 0;
             height: 2px;
-            background: linear-gradient(90deg, transparent, #10b981, transparent);
+            background: linear-gradient(90deg, transparent, #3BAFDA, transparent);
         }
 
         .toggle-sidebar {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            background: linear-gradient(135deg, #D7EEFB 0%, #9BD9F0 100%);
             border: none;
-            color: #047857;
+            color: #256EA6;
             font-size: 1.3rem;
             padding: 0.6rem 0.8rem;
             margin-right: 1rem;
             border-radius: 8px;
             transition: all 0.3s ease;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 2px 8px rgba(59, 175, 218, 0.2);
         }
 
         .toggle-sidebar:hover {
-            background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%);
+            background: linear-gradient(135deg, #9BD9F0 0%, #5EC2E6 100%);
             transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 12px rgba(59, 175, 218, 0.3);
         }
 
         .user-badge {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #3BAFDA 0%, #2F86C0 100%);
             color: white;
             font-weight: 600;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 2px 8px rgba(59, 175, 218, 0.3);
         }
 
         .admin-badge {
@@ -231,14 +231,14 @@
         }
 
         .page-header h1 {
-            color: #047857;
+            color: #256EA6;
             font-weight: 700;
             margin-bottom: 0.5rem;
             font-size: 2rem;
         }
 
         .page-header p {
-            color: #059669;
+            color: #2F86C0;
             margin: 0;
             font-weight: 500;
         }
@@ -246,14 +246,14 @@
         .card {
             border: none;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.1);
+            box-shadow: 0 5px 15px rgba(59, 175, 218, 0.1);
             transition: all 0.3s ease;
-            border-top: 3px solid #10b981;
+            border-top: 3px solid #3BAFDA;
         }
 
         .card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 8px 20px rgba(59, 175, 218, 0.2);
         }
 
         .notification-badge {
@@ -274,8 +274,8 @@
         }
 
         .notification-item.unread {
-            background-color: #ecfdf5;
-            border-left: 4px solid #10b981;
+            background-color: #E8F4FD;
+            border-left: 4px solid #3BAFDA;
         }
 
         .notification-icon {
@@ -286,21 +286,21 @@
             justify-content: center;
             font-size: 1rem;
             border-radius: 50%;
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            color: #047857;
+            background: linear-gradient(135deg, #D7EEFB 0%, #9BD9F0 100%);
+            color: #256EA6;
         }
 
         #notificationDropdownMenu {
             width: 380px;
             max-height: 450px;
             overflow-y: auto;
-            border: 1px solid #d1fae5;
+            border: 1px solid #B9E2F7;
             border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 8px 24px rgba(59, 175, 218, 0.2);
         }
 
         #notificationDropdownMenu .dropdown-header {
-            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(90deg, #3BAFDA 0%, #2F86C0 100%);
             color: white;
             font-weight: 700;
             border-radius: 12px 12px 0 0;
