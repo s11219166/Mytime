@@ -290,3 +290,14 @@ Route::get('/admin/clear-projects', function() {
         ], 500);
     }
 })->name('admin.clear-projects');
+
+// Clear cache and config (for fixing 419 errors)
+Route::get('/clear-cache', function() {
+    \Illuminate\Support\Facades\Artisan::call('cache:clear');
+    \Illuminate\Support\Facades\Artisan::call('config:clear');
+    \Illuminate\Support\Facades\Artisan::call('view:clear');
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Cache, config, and views cleared successfully.'
+    ]);
+})->name('clear-cache');
