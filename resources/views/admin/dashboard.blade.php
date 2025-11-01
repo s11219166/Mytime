@@ -3,12 +3,22 @@
 @section('title', 'Admin Dashboard - MyTime')
 
 @push('styles')
+<link rel="stylesheet" href="/css/admin-green.css">
 <style>
     .card-icon {
         font-size: 2.5rem;
         margin-bottom: 1rem;
+        color: #047857;
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function(){
+        document.body.classList.add('admin-theme');
+    });
+</script>
 @endpush
 
 @section('content')

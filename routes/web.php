@@ -37,8 +37,20 @@ Route::middleware('auth')->group(function () {
         if (!Auth::user()->isAdmin()) {
             return redirect('/dashboard');
         }
+        // Log admin session visit
+        try {
+            \App\Models\AdminSession::create([
+                'user_id' => Auth::id(),
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'path' => request()->path(),
+                'started_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            // fail silently to avoid breaking dashboard
+        }
         return view('admin.dashboard');
-    })->name('admin.dashboard');
+    })->middleware('admin')->name('admin.dashboard');
 
     // User Management Routes (Admin Only)
     Route::middleware('admin')->group(function () {
