@@ -4,18 +4,21 @@
 
 @section('content')
 <div class="page-header">
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1><i class="fas fa-bell me-2"></i>Notifications</h1>
-            <p>Stay updated with your project activities and reminders</p>
+            <p class="text-muted">Stay updated with your project activities and reminders</p>
         </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-outline-success" onclick="markAllAsRead()">
+        <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-sm btn-outline-success" onclick="markAllAsRead()" title="Mark all notifications as read">
                 <i class="fas fa-check-double me-2"></i>Mark All Read
+            </button>
+            <button class="btn btn-sm btn-outline-primary" onclick="markMultipleAsRead()" title="Mark selected notifications as read">
+                <i class="fas fa-check me-2"></i>Mark Selected
             </button>
             <form action="{{ route('notifications.clear-read') }}" method="POST" class="d-inline">
                 @csrf
-                <button type="submit" class="btn btn-outline-secondary" onclick="return confirm('Clear all read notifications?')">
+                <button type="submit" class="btn btn-sm btn-outline-secondary" onclick="return confirm('Clear all read notifications?')" title="Delete all read notifications">
                     <i class="fas fa-trash me-2"></i>Clear Read
                 </button>
             </form>
@@ -65,6 +68,9 @@
         @forelse($notifications as $notification)
         <div class="notification-item {{ $notification->is_read ? 'read' : 'unread' }}" data-type="{{ $notification->type }}" data-id="{{ $notification->id }}">
             <div class="d-flex align-items-start p-3 border-bottom">
+                <div class="me-3">
+                    <input type="checkbox" class="form-check-input notification-checkbox" value="{{ $notification->id }}" {{ $notification->is_read ? 'disabled' : '' }}>
+                </div>
                 <div class="notification-icon bg-{{ $notification->color }} text-white rounded-circle me-3">
                     <i class="fas {{ $notification->icon }}"></i>
                 </div>
@@ -103,7 +109,7 @@
         </div>
         @endforelse
     </div>
-    
+
     @if($notifications->hasPages())
     <div class="card-footer">
         <div class="d-flex justify-content-center">
@@ -211,6 +217,37 @@ function deleteNotification(id) {
     }
 }
 
+function markMultipleAsRead() {
+    const selectedIds = Array.from(document.querySelectorAll('.notification-checkbox:checked')).map(cb => parseInt(cb.value));
+
+    if (selectedIds.length === 0) {
+        showToast('Please select at least one notification to mark as read.', 'warning');
+        return;
+    }
+
+    fetch('{{ route('notifications.mark-multiple-read') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ ids: selectedIds })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showToast(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error marking notifications as read', 'danger');
+    });
+}
+
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
@@ -219,9 +256,9 @@ function showToast(message, type = 'info') {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
+
     document.body.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.remove();
     }, 5000);

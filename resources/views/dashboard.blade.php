@@ -160,6 +160,39 @@
         </div>
 
         <div class="col-lg-4">
+            <!-- Upcoming Due Projects -->
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-circle me-2"></i>Upcoming Due Projects
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="upcomingProjects" class="list-group list-group-flush">
+                        <div class="text-center p-3 text-muted">
+                            <i class="fas fa-spinner fa-spin"></i> Loading...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Notifications -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bell me-2"></i>Recent Notifications
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="recentNotifications" class="list-group list-group-flush">
+                        <div class="text-center p-3 text-muted">
+                            <i class="fas fa-spinner fa-spin"></i> Loading...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Stats -->
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Today's Stats</h5>
@@ -180,6 +213,7 @@
                 </div>
             </div>
 
+            <!-- Quick Actions -->
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Quick Actions</h5>
@@ -195,28 +229,6 @@
                         <a href="{{ route('financial.index') }}" class="btn btn-outline-warning">
                             <i class="fas fa-wallet me-1"></i>Financial Dashboard
                         </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Activity Feed</h5>
-                    <small class="text-muted">Today</small>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        <div class="list-group-item">
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-success rounded-circle p-2 me-3">
-                                    <i class="fas fa-check"></i>
-                                </span>
-                                <div>
-                                    <p class="mb-0">Started work session</p>
-                                    <small class="text-muted">{{ now()->format('h:i A') }}</small>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -478,5 +490,73 @@ stopBtn.addEventListener('click', function() {
 timerForm.addEventListener('submit', function(e) {
     e.preventDefault();
 });
+
+// Load upcoming projects
+function loadUpcomingProjects() {
+    fetch('/api/upcoming-projects')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('upcomingProjects');
+            if (data.projects && data.projects.length > 0) {
+                container.innerHTML = data.projects.map(project => `
+                    <a href="/projects/${project.id}" class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">${project.name}</h6>
+                                <small class="text-muted">${project.days_remaining} days remaining</small>
+                            </div>
+                            <span class="badge ${project.days_remaining <= 1 ? 'bg-danger' : project.days_remaining <= 3 ? 'bg-warning' : 'bg-info'}">
+                                ${project.days_remaining <= 0 ? 'OVERDUE' : project.days_remaining + 'd'}
+                            </span>
+                        </div>
+                    </a>
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="text-center p-3 text-muted"><i class="fas fa-check-circle"></i> No upcoming due projects</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading upcoming projects:', error);
+            document.getElementById('upcomingProjects').innerHTML = '<div class="text-center p-3 text-danger">Error loading projects</div>';
+        });
+}
+
+// Load recent notifications
+function loadRecentNotifications() {
+    fetch('/notifications/latest')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('recentNotifications');
+            if (data.notifications && data.notifications.length > 0) {
+                container.innerHTML = data.notifications.map(notification => `
+                    <a href="${notification.project_id ? '/projects/' + notification.project_id : '/notifications'}" class="list-group-item list-group-item-action ${notification.is_read ? '' : 'list-group-item-light'}">
+                        <div class="d-flex align-items-start">
+                            <div class="notification-icon bg-${notification.color} text-white rounded-circle me-2" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                                <i class="fas ${notification.icon}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${notification.title}</h6>
+                                <small class="text-muted">${notification.created_at}</small>
+                            </div>
+                        </div>
+                    </a>
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="text-center p-3 text-muted"><i class="fas fa-bell-slash"></i> No notifications</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading notifications:', error);
+            document.getElementById('recentNotifications').innerHTML = '<div class="text-center p-3 text-danger">Error loading notifications</div>';
+        });
+}
+
+// Load data on page load
+loadUpcomingProjects();
+loadRecentNotifications();
+
+// Refresh every 60 seconds
+setInterval(loadUpcomingProjects, 60000);
+setInterval(loadRecentNotifications, 60000);
 </script>
 @endpush

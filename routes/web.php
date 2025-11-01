@@ -138,6 +138,28 @@ Route::middleware('auth')->group(function () {
     Route::get('/financial/export', [FinancialController::class, 'export'])->name('financial.export');
     Route::get('/financial/filter', [FinancialController::class, 'filter'])->name('financial.filter');
 
+    // API Routes for Dashboard
+    Route::get('/api/upcoming-projects', function () {
+        $user = Auth::user();
+        $projects = $user->getAllProjects()
+            ->whereNotNull('end_date')
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->orderBy('end_date', 'asc')
+            ->limit(5)
+            ->get()
+            ->map(function ($project) {
+                return [
+                    'id' => $project->id,
+                    'name' => $project->name,
+                    'days_remaining' => $project->days_remaining,
+                    'end_date' => $project->end_date->format('M d, Y'),
+                    'status' => $project->status,
+                ];
+            });
+
+        return response()->json(['projects' => $projects]);
+    });
+
     // Notification Routes
     Route::get('/notifications', function () {
         $notifications = Auth::user()->notifications()->latest()->paginate(10);

@@ -452,8 +452,8 @@
             if (notificationList) {
                 if (notifications.length > 0) {
                     notificationList.innerHTML = notifications.map(notification => `
-                        <li class="notification-item ${notification.is_read ? '' : 'unread'}">
-                            <a class="dropdown-item" href="${notification.project_id ? '/projects/' + notification.project_id : '#'}">
+                        <li class="notification-item ${notification.is_read ? 'read' : 'unread'}">
+                            <a class="dropdown-item" href="${notification.project_id ? '/projects/' + notification.project_id : '#'}" data-notification-id="${notification.id}">
                                 <div class="d-flex align-items-start">
                                     <div class="notification-icon bg-${notification.color} text-white rounded-circle me-2">
                                         <i class="fas ${notification.icon}"></i>
@@ -483,17 +483,39 @@
         document.addEventListener('click', function(e) {
             if (e.target.closest('.notification-item')) {
                 const notificationItem = e.target.closest('.notification-item');
-                notificationItem.classList.remove('unread');
+                const notificationLink = notificationItem.querySelector('a');
+                const notificationId = notificationLink ? notificationLink.getAttribute('data-notification-id') : null;
 
-                // Update badge count
-                const badge = document.getElementById('notificationCount');
-                if (badge && !badge.classList.contains('d-none')) {
-                    let count = parseInt(badge.textContent);
-                    if (count > 1) {
-                        badge.textContent = count - 1;
-                    } else {
-                        badge.classList.add('d-none');
-                    }
+                if (notificationId && !notificationItem.classList.contains('read')) {
+                    // Send request to mark as read
+                    fetch(`/notifications/${notificationId}/read`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            notificationItem.classList.remove('unread');
+                            notificationItem.classList.add('read');
+
+                            // Update badge count
+                            const badge = document.getElementById('notificationCount');
+                            if (badge && !badge.classList.contains('d-none')) {
+                                let count = parseInt(badge.textContent);
+                                if (count > 1) {
+                                    badge.textContent = count - 1;
+                                } else {
+                                    badge.classList.add('d-none');
+                                }
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error marking notification as read:', error);
+                    });
                 }
             }
         });

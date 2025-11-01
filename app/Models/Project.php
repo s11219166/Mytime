@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\App;
+use App\Mail\ProjectDueReminderMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class Project extends Model
 {
@@ -34,19 +38,75 @@ class Project extends Model
     ];
 
     /**
+     * The "booted" method of the model.
+     */
+    protected static function booted()
+    {
+        static::created(function ($project) {
+            // Send notification when project is created
+            $project->sendNewProjectNotification();
+        });
+    }
+
+    /**
+     * Send notification when project is created
+     */
+    public function sendNewProjectNotification()
+    {
+        // Get the notification service
+        $notificationService = App::make('App\Services\NotificationService');
+
+        // Notify project creator
+        if ($this->creator) {
+            $notificationService->notifyProjectAssignment($this, $this->creator);
+
+            // Send email notification
+            if (isset($this->creator->email_notifications) && $this->creator->email_notifications) {
+                try {
+                    Mail::to($this->creator->email)
+                        ->send(new ProjectDueReminderMail(
+                            $this,
+                            $this->creator,
+                            0, // days remaining (0 for new project)
+                            'new_project', // urgency level
+                            'creation' // notification time
+                        ));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send new project email: ' . $e->getMessage());
+                }
+            }
+        }
+
+        // Notify all team members
+        foreach ($this->teamMembers as $member) {
+            if (!isset($member->project_updates) || $member->project_updates) {
+                $notificationService->notifyProjectAssignment($this, $member);
+
+                // Send email notification
+                if (isset($member->email_notifications) && $member->email_notifications) {
+                    try {
+                        Mail::to($member->email)
+                            ->send(new ProjectDueReminderMail(
+                                $this,
+                                $member,
+                                0, // days remaining (0 for new project)
+                                'new_project', // urgency level
+                                'creation' // notification time
+                            ));
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send new project email to team member: ' . $e->getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Get the user who created the project
      */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
-    }
-
-    /**
-     * Get the course this project belongs to
-     */
-    public function course(): BelongsTo
-    {
-        return $this->belongsTo(Course::class);
     }
 
     /**

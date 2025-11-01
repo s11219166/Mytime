@@ -66,6 +66,7 @@ class Notification extends Model
             'time_reminder' => 'fa-clock',
             'project_completed' => 'fa-check-circle',
             'project_assigned' => 'fa-user-plus',
+            'new_project' => 'fa-folder-plus',
             default => 'fa-info-circle'
         };
     }
@@ -82,6 +83,7 @@ class Notification extends Model
             'time_reminder' => 'primary',
             'project_completed' => 'success',
             'project_assigned' => 'success',
+            'new_project' => 'primary',
             default => 'secondary'
         };
     }

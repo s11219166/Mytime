@@ -40,6 +40,9 @@
         .header.moderate {
             background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
         }
+        .header.new_project {
+            background: linear-gradient(135deg, #17a2b8 0%, #007bff 100%);
+        }
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.85; }
@@ -74,6 +77,10 @@
             border-left-color: #ffc107;
             background: #fffbf0;
         }
+        .project-info.new_project {
+            border-left-color: #17a2b8;
+            background: #f0f8ff;
+        }
         .project-info h3 {
             margin-top: 0;
             color: #32CD32;
@@ -89,6 +96,9 @@
         }
         .project-info.moderate h3 {
             color: #ffc107;
+        }
+        .project-info.new_project h3 {
+            color: #17a2b8;
         }
         .priority-badge {
             display: inline-block;
@@ -143,6 +153,11 @@
             border-color: #dc3545;
             color: #721c24;
         }
+        .alert.info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
         .button {
             display: inline-block;
             padding: 12px 30px;
@@ -191,26 +206,38 @@
                 $headerClass = 'overdue';
             } elseif ($daysRemaining == 2) {
                 $headerClass = 'moderate';
+            } elseif ($urgencyLevel === 'new_project') {
+                $headerClass = 'new_project';
             }
         @endphp
 
         <div class="header {{ $headerClass }}">
-            <h1>🔔 Project Due Date Reminder</h1>
-            @if($urgencyLevel === 'critical')
-                <p style="margin: 10px 0 0 0; font-size: 16px; font-weight: bold;">🔴 CRITICAL ALERT - DUE TODAY! 🔴</p>
-            @elseif($urgencyLevel === 'high')
-                <p style="margin: 10px 0 0 0; font-size: 16px; font-weight: bold;">🚨 HIGH PRIORITY - DUE TOMORROW! 🚨</p>
-            @elseif($urgencyLevel === 'overdue')
-                <p style="margin: 10px 0 0 0; font-size: 16px; font-weight: bold;">❌ PROJECT OVERDUE! ❌</p>
-            @elseif($daysRemaining == 3 && $notificationTime === 'evening')
-                <p style="margin: 10px 0 0 0; font-size: 14px;">🌙 Evening Check-in Reminder</p>
+            @if($urgencyLevel === 'new_project')
+                <h1>🎉 New Project Assignment</h1>
+                <p style="margin: 10px 0 0 0; font-size: 16px; font-weight: bold;">You've been assigned to a new project!</p>
+            @else
+                <h1>🔔 Project Due Date Reminder</h1>
+                @if($urgencyLevel === 'critical')
+                    <p style="margin: 10px 0 0 0; font-size: 16px; font-weight: bold;">🔴 CRITICAL ALERT - DUE TODAY! 🔴</p>
+                @elseif($urgencyLevel === 'high')
+                    <p style="margin: 10px 0 0 0; font-size: 16px; font-weight: bold;">🚨 HIGH PRIORITY - DUE TOMORROW! 🚨</p>
+                @elseif($urgencyLevel === 'overdue')
+                    <p style="margin: 10px 0 0 0; font-size: 16px; font-weight: bold;">❌ PROJECT OVERDUE! ❌</p>
+                @elseif($daysRemaining == 3 && $notificationTime === 'evening')
+                    <p style="margin: 10px 0 0 0; font-size: 14px;">🌙 Evening Check-in Reminder</p>
+                @endif
             @endif
         </div>
 
         <div class="content">
             <p>Hello {{ $user->name }},</p>
 
-            @if($daysRemaining == 3)
+            @if($urgencyLevel === 'new_project')
+                <div class="alert info">
+                    <strong>🎉 New Project Assignment:</strong> You have been assigned to the project "<strong>{{ $project->name }}</strong>".
+                    <br><strong>Please review the project details and start working on assigned tasks.</strong>
+                </div>
+            @elseif($daysRemaining == 3)
                 <div class="alert">
                     <strong>📅 {{ $notificationTime === 'morning' ? 'Morning' : 'Evening' }} Reminder:</strong> The project "<strong>{{ $project->name }}</strong>" is due in <strong>3 days</strong>.
                     @if($notificationTime === 'morning')
@@ -268,10 +295,12 @@
                     <span class="value">{{ $project->start_date->format('M d, Y') }}</span>
                 </div>
 
+                @if($project->end_date)
                 <div class="info-row">
                     <span class="label">Due Date:</span>
                     <span class="value">{{ $project->end_date->format('M d, Y') }}</span>
                 </div>
+                @endif
 
                 <div class="info-row">
                     <span class="label">Progress:</span>
@@ -302,11 +331,16 @@
             </div>
 
             <p style="margin-top: 30px; color: #666;">
-                This is an automated reminder from MyTime Project Management System.
-                @if($daysRemaining > 0)
-                    Please ensure all tasks are completed before the due date.
+                @if($urgencyLevel === 'new_project')
+                    This is an automated notification from MyTime Project Management System.
+                    <br>You've been assigned to this project. Please review the details and start working on assigned tasks.
                 @else
-                    Please update the project status or extend the deadline if needed.
+                    This is an automated reminder from MyTime Project Management System.
+                    @if($daysRemaining > 0)
+                        Please ensure all tasks are completed before the due date.
+                    @else
+                        Please update the project status or extend the deadline if needed.
+                    @endif
                 @endif
             </p>
         </div>

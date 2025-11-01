@@ -40,6 +40,19 @@ class ProjectController extends Controller
                   ->orWhere('description', 'like', '%' . $request->search . '%');
         }
 
+        // Sort by due dates (upcoming first), completed projects at the end
+        $query->orderByRaw("CASE 
+            WHEN status = 'completed' THEN 2
+            WHEN status = 'cancelled' THEN 2
+            ELSE 1
+        END ASC")
+        ->orderByRaw("CASE 
+            WHEN end_date IS NULL THEN 1
+            ELSE 0
+        END ASC")
+        ->orderBy('end_date', 'ASC')
+        ->latest('updated_at');
+
         // Validate per_page parameter
         $perPageOptions = [10, 25, 50, 100];
         $perPage = $request->input('per_page', 25);
@@ -47,7 +60,7 @@ class ProjectController extends Controller
             $perPage = 25;
         }
 
-        $projects = $query->latest()->paginate($perPage)->appends([
+        $projects = $query->paginate($perPage)->appends([
             'status' => $request->status,
             'search' => $request->search,
             'per_page' => $perPage,

@@ -8,11 +8,11 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// ===== HOURLY PROJECT CHECKS =====
-// Check project due dates and send notifications + emails EVERY HOUR
+// ===== REAL-TIME PROJECT CHECKS =====
+// Check project due dates and send notifications + emails EVERY HOUR (closest to 5 hours)
 Schedule::command('projects:check-due-dates')
     ->hourly()
-    ->name('hourly-project-check')
+    ->name('realtime-project-check')
     ->emailOutputOnFailure(config('mail.admin_email'))
     ->runInBackground();
 
@@ -28,3 +28,8 @@ Schedule::command('projects:check-due-dates')
     ->dailyAt('18:00')
     ->name('evening-reminder-check')
     ->emailOutputOnFailure(config('mail.admin_email'));
+
+// Test command for new project notifications
+Artisan::command('test:new-project-notification', function () {
+    $this->call('test:new-project-notification');
+})->purpose('Test new project notification');

@@ -904,6 +904,23 @@
     font-weight: 600;
     color: #212529;
     margin: 0;
+    font-size: 0.95rem;
+}
+
+.modern-table tbody td {
+    font-size: 0.875rem;
+}
+
+.modern-table thead th {
+    font-size: 0.7rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+}
+
+.stat-label {
+    font-size: 0.7rem;
 }
 
 /* Modern Badges */
