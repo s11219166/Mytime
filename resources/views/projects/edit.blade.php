@@ -178,6 +178,12 @@
     form.addEventListener('submit', function(e){
       e.preventDefault();
       
+      // Disable submit button to prevent multiple submissions
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+      
       const formData = new FormData(form);
       
       fetch(form.action, {
@@ -190,20 +196,32 @@
       .then(response => {
         if (response.ok) {
           showSuccessMessage('Project updated successfully!');
+          // Re-enable submit button
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
           setTimeout(() => {
             window.location.href = '{{ route("projects.index") }}';
-          }, 500);
+          }, 1000);
         } else if (response.status === 422) {
           return response.json().then(data => {
             showErrorMessage('Please fix the errors below');
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
           });
         } else {
           showErrorMessage('An error occurred. Please try again.');
+          // Re-enable submit button
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
         }
       })
       .catch(error => {
         console.error('Error:', error);
         showErrorMessage('An error occurred. Please try again.');
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
       });
     });
   }

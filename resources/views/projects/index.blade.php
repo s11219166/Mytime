@@ -1677,26 +1677,41 @@ function updateProgress() {
 
 function deleteProject(projectId, projectName) {
     if (confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
+        const deleteBtn = event.target.closest('button');
+        if (deleteBtn) {
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        }
+
         fetch(`/projects/${projectId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
             }
         })
         .then(response => {
-            if (response.ok) {
+            if (response.ok || response.status === 200) {
                 showToast('Project deleted successfully!', 'success');
                 setTimeout(() => {
                     window.location.reload();
-                }, 500);
+                }, 800);
             } else {
                 showToast('Error deleting project', 'danger');
+                if (deleteBtn) {
+                    deleteBtn.disabled = false;
+                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                }
             }
         })
         .catch(error => {
             console.error('Error:', error);
             showToast('Error deleting project', 'danger');
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            }
         });
     }
 }

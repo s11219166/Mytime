@@ -233,6 +233,12 @@
       // Allow normal form submission but intercept with fetch
       e.preventDefault();
       
+      // Disable submit button to prevent multiple submissions
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating...';
+      
       const formData = new FormData(form);
       
       fetch(form.action, {
@@ -248,10 +254,13 @@
           showSuccessMessage('Project created successfully!');
           // Clear the form
           clearForm();
-          // Redirect to projects index immediately
+          // Re-enable submit button
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+          // Redirect to projects index after showing success
           setTimeout(() => {
             window.location.href = '{{ route("projects.index") }}';
-          }, 500);
+          }, 1500);
         } else if (response.status === 422) {
           // Validation errors
           return response.json().then(data => {
@@ -263,14 +272,23 @@
                 input.classList.add('is-invalid');
               }
             });
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
           });
         } else {
           showErrorMessage('An error occurred. Please try again.');
+          // Re-enable submit button
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
         }
       })
       .catch(error => {
         console.error('Error:', error);
         showErrorMessage('An error occurred. Please try again.');
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
       });
     });
   });
