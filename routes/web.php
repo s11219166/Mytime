@@ -37,21 +37,6 @@ Route::middleware('auth')->group(function () {
         if (!Auth::user()->isAdmin()) {
             return redirect('/dashboard');
         }
-        // Log admin session visit (start) - wrapped in try-catch to prevent 419 errors
-        try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('admin_sessions')) {
-                \App\Models\AdminSession::create([
-                    'user_id' => Auth::id(),
-                    'ip_address' => request()->ip(),
-                    'user_agent' => request()->userAgent(),
-                    'path' => request()->path(),
-                    'started_at' => now(),
-                ]);
-            }
-        } catch (\Throwable $e) {
-            // fail silently to avoid breaking dashboard
-            \Illuminate\Support\Facades\Log::error('AdminSession creation failed: ' . $e->getMessage());
-        }
 
         // Build session metrics - only if table exists
         $myTodaySessions = 0;
@@ -103,7 +88,8 @@ Route::middleware('auth')->group(function () {
         try {
             if (\Illuminate\Support\Facades\Schema::hasTable('admin_sessions')) {
                 $latest = \App\Models\AdminSession::where('user_id', Auth::id())
-                    ->latest('created_at')->first();
+                    ->whereNull('ended_at')
+                    ->latest('started_at')->first();
                 if ($latest) {
                     $latest->update(['ended_at' => now()]);
                 }

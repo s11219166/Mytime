@@ -8,7 +8,7 @@
     .card-icon {
         font-size: 2.5rem;
         margin-bottom: 1rem;
-        color: #047857;
+        color: #256EA6;
     }
 </style>
 @endpush
@@ -180,18 +180,29 @@
   beat();
 
   // Session timer from lastSession.started_at
-  const startedAt = "{{ optional($lastSession?->started_at)->format('Y-m-d H:i:s') }}";
+  const startedAtStr = "{{ optional($lastSession?->started_at)->format('Y-m-d H:i:s') }}";
   const timerEl = document.getElementById('sessionTimer');
   function tick(){
-    if(!startedAt) { timerEl.textContent = '00:00:00'; return; }
-    const start = new Date(startedAt.replace(' ', 'T'));
-    const now = new Date();
-    let diff = Math.max(0, Math.floor((now - start)/1000));
-    const h = String(Math.floor(diff/3600)).padStart(2,'0');
-    diff %= 3600;
-    const m = String(Math.floor(diff/60)).padStart(2,'0');
-    const s = String(diff%60).padStart(2,'0');
-    timerEl.textContent = `${h}:${m}:${s}`;
+    if(!startedAtStr || startedAtStr.trim() === '') { 
+      timerEl.textContent = '00:00:00'; 
+      return; 
+    }
+    try {
+      const start = new Date(startedAtStr.replace(' ', 'T') + 'Z');
+      if(isNaN(start.getTime())) {
+        timerEl.textContent = '00:00:00';
+        return;
+      }
+      const now = new Date();
+      let diff = Math.max(0, Math.floor((now - start)/1000));
+      const h = String(Math.floor(diff/3600)).padStart(2,'0');
+      diff %= 3600;
+      const m = String(Math.floor(diff/60)).padStart(2,'0');
+      const s = String(diff%60).padStart(2,'0');
+      timerEl.textContent = `${h}:${m}:${s}`;
+    } catch(e) {
+      timerEl.textContent = '00:00:00';
+    }
   }
   setInterval(tick, 1000);
   tick();
