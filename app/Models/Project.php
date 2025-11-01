@@ -55,10 +55,21 @@ class Project extends Model
     {
         // Get the notification service
         $notificationService = App::make('App\Services\NotificationService');
+        $pushNotificationService = App::make('App\Services\PushNotificationService');
 
         // Notify project creator
         if ($this->creator) {
             $notificationService->notifyProjectAssignment($this, $this->creator);
+
+            // Send push notification
+            if (isset($this->creator->push_notifications) && $this->creator->push_notifications) {
+                try {
+                    $pushNotificationService->sendNewProjectNotification($this->creator, $this);
+                    Log::info('Push notification sent for new project to creator: ' . $this->creator->id);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send new project push notification: ' . $e->getMessage());
+                }
+            }
 
             // Send email notification
             if (isset($this->creator->email_notifications) && $this->creator->email_notifications) {
@@ -81,6 +92,16 @@ class Project extends Model
         foreach ($this->teamMembers as $member) {
             if (!isset($member->project_updates) || $member->project_updates) {
                 $notificationService->notifyProjectAssignment($this, $member);
+
+                // Send push notification
+                if (isset($member->push_notifications) && $member->push_notifications) {
+                    try {
+                        $pushNotificationService->sendNewProjectNotification($member, $this);
+                        Log::info('Push notification sent for new project to team member: ' . $member->id);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send new project push notification to team member: ' . $e->getMessage());
+                    }
+                }
 
                 // Send email notification
                 if (isset($member->email_notifications) && $member->email_notifications) {

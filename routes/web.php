@@ -174,6 +174,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/clear-read', [\App\Http\Controllers\NotificationController::class, 'clearRead'])->name('notifications.clear-read');
     Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'getUnreadCount']);
     Route::get('/notifications/latest', [\App\Http\Controllers\NotificationController::class, 'getLatest']);
+
+    // Push Notification Routes
+    Route::post('/push-notifications/subscribe', [\App\Http\Controllers\PushNotificationController::class, 'subscribe']);
+    Route::post('/push-notifications/unsubscribe', [\App\Http\Controllers\PushNotificationController::class, 'unsubscribe']);
+    Route::post('/push-notifications/toggle', [\App\Http\Controllers\PushNotificationController::class, 'toggle']);
+    Route::post('/push-notifications/test', [\App\Http\Controllers\PushNotificationController::class, 'test']);
+    Route::get('/push-notifications/status', [\App\Http\Controllers\PushNotificationController::class, 'status']);
 });
 
 // Test route to check database connection
