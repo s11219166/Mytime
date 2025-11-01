@@ -182,6 +182,7 @@
 (function(){
   const start = document.getElementById('start_date');
   const end = document.getElementById('end_date');
+  const form = document.getElementById('projectForm');
 
   function toYMD(d){
     const dt = new Date(d.getTime() - d.getTimezoneOffset()*60000);
@@ -204,6 +205,21 @@
     }
   }
 
+  function clearForm(){
+    if (form) {
+      form.reset();
+      // Reset start_date to today
+      const today = toYMD(new Date());
+      document.getElementById('start_date').value = today;
+      // Reset status to active
+      document.getElementById('status').value = 'active';
+      // Reset priority to medium
+      document.getElementById('priority').value = 'medium';
+      // Recalculate min date for end_date
+      setMins();
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function(){
     // Autofocus name on desktop only to prevent zoom jump on mobile
     if (window.innerWidth > 768) {
@@ -211,7 +227,84 @@
       if (name) name.focus();
     }
     setMins();
+
+    // Handle form submission with AJAX to clear form on success
+    form.addEventListener('submit', function(e){
+      // Allow normal form submission but intercept with fetch
+      e.preventDefault();
+      
+      const formData = new FormData(form);
+      
+      fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          // Show success message
+          showSuccessMessage('Project created successfully!');
+          // Clear the form
+          clearForm();
+          // Redirect to projects index after 2 seconds
+          setTimeout(() => {
+            window.location.href = '{{ route("projects.index") }}';
+          }, 2000);
+        } else if (response.status === 422) {
+          // Validation errors
+          return response.json().then(data => {
+            showErrorMessage('Please fix the errors below');
+            // Re-populate form with old values
+            Object.keys(data.errors).forEach(field => {
+              const input = document.getElementById(field);
+              if (input) {
+                input.classList.add('is-invalid');
+              }
+            });
+          });
+        } else {
+          showErrorMessage('An error occurred. Please try again.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showErrorMessage('An error occurred. Please try again.');
+      });
+    });
   });
+
+  function showSuccessMessage(message){
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+      <i class="fas fa-check-circle me-2"></i>${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const form = document.getElementById('projectForm');
+    form.parentElement.insertBefore(alertDiv, form);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+      alertDiv.remove();
+    }, 5000);
+  }
+
+  function showErrorMessage(message){
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+      <i class="fas fa-exclamation-circle me-2"></i>${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const form = document.getElementById('projectForm');
+    form.parentElement.insertBefore(alertDiv, form);
+  }
 
   start.addEventListener('change', setMins);
 })();
