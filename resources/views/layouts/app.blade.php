@@ -21,11 +21,11 @@
             left: 0;
             height: 100vh;
             width: 250px;
-            background: linear-gradient(180deg, #3BAFDA 0%, #2F86C0 50%, #256EA6 100%);
+            background: linear-gradient(180deg, #3BAFDA 0%, #2F86C0 50%, #256EA6 100%) !important;
             color: white;
             transition: all 0.3s ease;
             z-index: 1000;
-            box-shadow: 4px 0 20px rgba(59, 175, 218, 0.3);
+            box-shadow: 4px 0 20px rgba(59, 175, 218, 0.3) !important;
             overflow-y: auto;
         }
 
@@ -134,9 +134,9 @@
 
         .sidebar-menu a.active {
             background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
-            color: #CFF0FF;
+            color: #CFF0FF !important;
             font-weight: 600;
-            border-right: 3px solid #5EC2E6;
+            border-right: 3px solid #5EC2E6 !important;
         }
 
         .sidebar-menu a.active::before {
@@ -153,7 +153,7 @@
 
         .sidebar-menu a:hover i,
         .sidebar-menu a.active i {
-            color: #5EC2E6;
+            color: #5EC2E6 !important;
             transform: scale(1.15);
         }
 
