@@ -92,7 +92,7 @@
             </div>
 
             <div class="row">
-                <div class="col-md-4 mb-4">
+            <div class="col-md-3 mb-4">
                     <div class="card h-100 border-primary">
                         <div class="card-body text-center">
                             <div class="display-4 text-primary mb-3">
@@ -105,7 +105,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-info">
                         <div class="card-body text-center">
                             <div class="display-4 text-info mb-3">
@@ -118,7 +118,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-warning">
                         <div class="card-body text-center">
                             <div class="display-4 text-warning mb-3">
@@ -131,7 +131,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-secondary">
                         <div class="card-body text-center">
                             <div class="display-4 text-secondary mb-3">
@@ -144,7 +144,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-danger">
                         <div class="card-body text-center">
                             <div class="display-4 text-danger mb-3">
@@ -153,6 +153,32 @@
                             <h5 class="card-title">Profile</h5>
                             <p class="card-text">Manage your account settings</p>
                             <a href="{{ route('profile') }}" class="btn btn-danger">View Profile</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100 border-success">
+                        <div class="card-body text-center">
+                            <div class="display-4 text-success mb-3">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <h5 class="card-title">Notifications</h5>
+                            <p class="card-text">View all your notifications</p>
+                            <a href="{{ route('notifications') }}" class="btn btn-success">View Notifications</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100 border-dark">
+                        <div class="card-body text-center">
+                            <div class="display-4 text-dark mb-3">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <h5 class="card-title">Inspiration</h5>
+                            <p class="card-text">Get inspired and motivated</p>
+                            <a href="{{ route('inspiration') }}" class="btn btn-dark">Get Inspired</a>
                         </div>
                     </div>
                 </div>
@@ -238,7 +264,7 @@
     <div class="row mt-4">
         <div class="col-12">
             <div class="row">
-                <div class="col-md-6 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-purple">
                         <div class="card-body text-center">
                             <div class="display-4 text-purple mb-3">
@@ -251,7 +277,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-orange">
                         <div class="card-body text-center">
                             <div class="display-4 text-orange mb-3">
@@ -264,7 +290,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-teal">
                         <div class="card-body text-center">
                             <div class="display-4 text-teal mb-3">
@@ -277,7 +303,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-pink">
                         <div class="card-body text-center">
                             <div class="display-4 text-pink mb-3">
@@ -285,7 +311,7 @@
                             </div>
                             <h5 class="card-title">Settings</h5>
                             <p class="card-text">Configure your preferences</p>
-                            <a href="#" class="btn btn-pink">Open Settings</a>
+                            <a href="{{ route('profile') }}" class="btn btn-pink">Open Settings</a>
                         </div>
                     </div>
                 </div>

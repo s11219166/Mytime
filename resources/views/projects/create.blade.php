@@ -65,10 +65,16 @@
                             <div class="modern-input-group">
                                 <i class="fas fa-info-circle input-icon"></i>
                                 <select class="modern-input status-select @error('status') is-invalid @enderror" id="status" name="status" aria-label="Project Status">
-                                    <option value="planning" {{ old('status', 'planning') == 'planning' ? 'selected' : '' }} data-color="info">📋 Planning</option>
                                     <option value="active" {{ old('status') == 'active' ? 'selected' : '' }} data-color="success">🚀 Active</option>
-                                    <option value="paused" {{ old('status') == 'paused' ? 'selected' : '' }} data-color="warning">⏸️ On Hold</option>
+                                    <option value="inprogress" {{ old('status') == 'inprogress' ? 'selected' : '' }} data-color="info">⚡ In Progress</option>
+                                    <option value="review_pending" {{ old('status') == 'review_pending' ? 'selected' : '' }} data-color="warning">👀 Review Pending</option>
+                                    <option value="revision_needed" {{ old('status') == 'revision_needed' ? 'selected' : '' }} data-color="danger">🔄 Revision Needed</option>
+                                    <option value="awaiting_input" {{ old('status') == 'awaiting_input' ? 'selected' : '' }} data-color="secondary">⏳ Awaiting Input</option>
+                                    <option value="paused" {{ old('status') == 'paused' ? 'selected' : '' }} data-color="warning">⏸️ Paused</option>
+                                    <option value="overdue" {{ old('status') == 'overdue' ? 'selected' : '' }} data-color="danger">⚠️ Overdue</option>
                                     <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }} data-color="primary">✅ Completed</option>
+                                    <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }} data-color="secondary">❌ Cancelled</option>
+                                    <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }} data-color="muted">💤 Inactive</option>
                                 </select>
                             </div>
                             @error('status')
@@ -118,15 +124,19 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-6 mb-4 optional-field">
-                            <label for="end_date" class="modern-label">End Date <span class="text-muted small">(Optional)</span></label>
+                        <div class="col-md-6 mb-4">
+                            <label for="end_date" class="modern-label">End Date <span class="text-danger">*</span></label>
                             <div class="modern-input-group">
                                 <i class="fas fa-calendar-times input-icon"></i>
                                 <input type="text" class="modern-input date-input @error('end_date') is-invalid @enderror"
                                        id="end_date" name="end_date" value="{{ old('end_date') }}"
-                                       placeholder="Type 'tomorrow', 'next week' or select"
-                                       aria-label="End Date" autocomplete="off">
+                                       required placeholder="Type 'tomorrow', 'next week' or select"
+                                       aria-label="End Date" data-validate="required" autocomplete="off">
                                 <input type="date" class="modern-input date-picker" id="end_date_picker" style="display:none;">
+                                <button type="button" class="calendar-btn" onclick="showDatePicker('end_date')" title="Open Calendar">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </button>
+                                <span class="validation-icon"><i class="fas fa-check"></i></span>
                             </div>
                             <div class="date-quick-actions mt-2">
                                 <button type="button" class="btn-quick-date" onclick="setDate('end_date', 7)">1 Week</button>
@@ -134,7 +144,7 @@
                                 <button type="button" class="btn-quick-date" onclick="setDate('end_date', 30)">1 Month</button>
                                 <button type="button" class="btn-quick-date" onclick="setDate('end_date', 90)">3 Months</button>
                             </div>
-                            <div class="invalid-feedback">End date must be after start date</div>
+                            <div class="invalid-feedback">Please select an end date</div>
                             @error('end_date')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -351,6 +361,14 @@ function setDate(fieldId, daysFromToday) {
     const formatted = formatDate(today);
     document.getElementById(fieldId).value = formatted;
     validateField(document.getElementById(fieldId));
+}
+
+// Show date picker
+function showDatePicker(fieldId) {
+    const picker = document.getElementById(fieldId + '_picker');
+    picker.style.display = 'block';
+    picker.focus();
+    picker.click();
 }
 
 // Setup date inputs
@@ -843,6 +861,30 @@ kbd {
 /* Date Input Enhancements */
 .date-input {
     cursor: text;
+}
+
+.calendar-btn {
+    position: absolute;
+    right: 3.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #667eea;
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 2;
+}
+
+.calendar-btn:hover {
+    background: #5a67d8;
+    transform: translateY(-50%) scale(1.1);
 }
 
 .date-quick-actions {
