@@ -67,6 +67,21 @@ class FinancialController extends Controller
     }
 
     /**
+     * Get a single transaction for editing
+     */
+    public function show($id)
+    {
+        $transaction = FinancialTransaction::with('category')
+            ->forUser(Auth::id())
+            ->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'transaction' => $transaction
+        ]);
+    }
+
+    /**
      * Store a new transaction
      */
     public function store(StoreFinancialTransactionRequest $request)

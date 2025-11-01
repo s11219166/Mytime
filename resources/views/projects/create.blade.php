@@ -248,10 +248,10 @@
           showSuccessMessage('Project created successfully!');
           // Clear the form
           clearForm();
-          // Redirect to projects index after 2 seconds
+          // Redirect to projects index immediately
           setTimeout(() => {
             window.location.href = '{{ route("projects.index") }}';
-          }, 2000);
+          }, 500);
         } else if (response.status === 422) {
           // Validation errors
           return response.json().then(data => {

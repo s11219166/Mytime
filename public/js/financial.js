@@ -96,9 +96,17 @@ function financialDashboard() {
                 const data = await response.json();
 
                 if (data.success) {
+                    // Format date to YYYY-MM-DD for input[type="date"]
+                    let formattedDate = data.transaction.transaction_date;
+                    if (formattedDate && formattedDate.includes('T')) {
+                        formattedDate = formattedDate.split('T')[0];
+                    } else if (formattedDate && formattedDate.includes(' ')) {
+                        formattedDate = formattedDate.split(' ')[0];
+                    }
+
                     this.formData = {
                         id: data.transaction.id,
-                        transaction_date: data.transaction.transaction_date,
+                        transaction_date: formattedDate,
                         type: data.transaction.type,
                         category_id: data.transaction.category_id,
                         amount: data.transaction.amount,
@@ -106,6 +114,9 @@ function financialDashboard() {
                         status: data.transaction.status,
                         reference_number: data.transaction.reference_number || ''
                     };
+
+                    // Filter categories by type after loading
+                    this.filterCategoriesByType();
                 }
             } catch (error) {
                 console.error('Error loading transaction:', error);

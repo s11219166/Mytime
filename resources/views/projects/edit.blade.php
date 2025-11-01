@@ -36,7 +36,7 @@
                 </h5>
             </div>
             <div class="modern-form-card-body">
-                <form method="POST" action="{{ route('projects.update', $project) }}">
+                <form method="POST" action="{{ route('projects.update', $project) }}" id="editProjectForm">
                     @csrf
                     @method('PUT')
 
@@ -168,6 +168,78 @@
             </div>
         </div>
     </div>
+
+@push('scripts')
+<script>
+(function(){
+  const form = document.getElementById('editProjectForm');
+  
+  if (form) {
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      
+      const formData = new FormData(form);
+      
+      fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          showSuccessMessage('Project updated successfully!');
+          setTimeout(() => {
+            window.location.href = '{{ route("projects.index") }}';
+          }, 500);
+        } else if (response.status === 422) {
+          return response.json().then(data => {
+            showErrorMessage('Please fix the errors below');
+          });
+        } else {
+          showErrorMessage('An error occurred. Please try again.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showErrorMessage('An error occurred. Please try again.');
+      });
+    });
+  }
+
+  function showSuccessMessage(message){
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+      <i class="fas fa-check-circle me-2"></i>${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const form = document.getElementById('editProjectForm');
+    form.parentElement.insertBefore(alertDiv, form);
+    
+    setTimeout(() => {
+      alertDiv.remove();
+    }, 5000);
+  }
+
+  function showErrorMessage(message){
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+      <i class="fas fa-exclamation-circle me-2"></i>${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const form = document.getElementById('editProjectForm');
+    form.parentElement.insertBefore(alertDiv, form);
+  }
+})();
+</script>
+@endpush
 
     <div class="col-lg-4">
         <!-- Project Owner Card -->
