@@ -37,7 +37,7 @@ Route::middleware('auth')->group(function () {
         if (!Auth::user()->isAdmin()) {
             return redirect('/dashboard');
         }
-        // Log admin session visit
+        // Log admin session visit (start)
         try {
             \App\Models\AdminSession::create([
                 'user_id' => Auth::id(),
@@ -49,8 +49,50 @@ Route::middleware('auth')->group(function () {
         } catch (\Throwable $e) {
             // fail silently to avoid breaking dashboard
         }
-        return view('admin.dashboard');
+
+        // Build session metrics
+        $userId = Auth::id();
+        $today = now()->toDateString();
+        $myTodaySessions = \App\Models\AdminSession::where('user_id', $userId)
+            ->whereDate('created_at', $today)->count();
+        $myTotalSessions = \App\Models\AdminSession::where('user_id', $userId)->count();
+        $globalTodaySessions = \App\Models\AdminSession::whereDate('created_at', $today)->count();
+        $globalTotalSessions = \App\Models\AdminSession::count();
+        $activeAdmins = \App\Models\AdminSession::where('started_at', '>=', now()->subMinutes(30))
+            ->distinct('user_id')->count('user_id');
+        $recentSessions = \App\Models\AdminSession::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')->limit(10)->get();
+        $lastSession = \App\Models\AdminSession::where('user_id', $userId)
+            ->latest('created_at')->first();
+        $last7 = \App\Models\AdminSession::where('user_id', $userId)
+            ->where('created_at', '>=', now()->subDays(7))->count();
+        $avgDailySessions = round($last7 / 7, 2);
+
+        return view('admin.dashboard', compact(
+            'myTodaySessions',
+            'myTotalSessions',
+            'globalTodaySessions',
+            'globalTotalSessions',
+            'activeAdmins',
+            'recentSessions',
+            'lastSession',
+            'avgDailySessions'
+        ));
     })->middleware('admin')->name('admin.dashboard');
+
+    // Admin session heartbeat to update last activity (ended_at)
+    Route::post('/admin/session/heartbeat', function() {
+        try {
+            $latest = \App\Models\AdminSession::where('user_id', Auth::id())
+                ->latest('created_at')->first();
+            if ($latest) {
+                $latest->update(['ended_at' => now()]);
+            }
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false], 500);
+        }
+    })->middleware('admin')->name('admin.session.heartbeat');
 
     // User Management Routes (Admin Only)
     Route::middleware('admin')->group(function () {

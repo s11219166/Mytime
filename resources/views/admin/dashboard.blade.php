@@ -25,124 +25,121 @@
 <div class="page-header">
     <div>
         <h1>Admin Dashboard</h1>
-        <p>Welcome back, {{ Auth::user()->name }}! Manage your MyTime system.</p>
+        <p>Welcome back, {{ Auth::user()->name }}! Monitor system and sessions.</p>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-3 mb-4">
-        <div class="card text-center h-100">
+<!-- KPI Cards -->
+<div class="row g-3">
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card h-100 text-center">
             <div class="card-body">
-                <div class="card-icon text-primary">
-                    <i class="fas fa-users"></i>
-                </div>
-                <h5 class="card-title">User Management</h5>
-                <p class="card-text">Create, edit, and manage user accounts</p>
-                <a href="#" class="btn btn-primary">Manage Users</a>
+                <div class="card-icon text-success"><i class="fas fa-user-shield"></i></div>
+                <h6 class="text-muted">My Sessions Today</h6>
+                <h2 class="mb-0">{{ $myTodaySessions ?? 0 }}</h2>
             </div>
         </div>
     </div>
-
-    <div class="col-md-3 mb-4">
-        <div class="card text-center h-100">
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card h-100 text-center">
             <div class="card-body">
-                <div class="card-icon text-success">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <h5 class="card-title">Time Tracking</h5>
-                <p class="card-text">Monitor and manage time entries</p>
-                <a href="#" class="btn btn-success">View Time Logs</a>
+                <div class="card-icon text-primary"><i class="fas fa-layer-group"></i></div>
+                <h6 class="text-muted">My Total Sessions</h6>
+                <h2 class="mb-0">{{ $myTotalSessions ?? 0 }}</h2>
             </div>
         </div>
     </div>
-
-    <div class="col-md-3 mb-4">
-        <div class="card text-center h-100">
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card h-100 text-center">
             <div class="card-body">
-                <div class="card-icon text-warning">
-                    <i class="fas fa-chart-bar"></i>
-                </div>
-                <h5 class="card-title">Reports</h5>
-                <p class="card-text">Generate and view detailed reports</p>
-                <a href="{{ route('analytics') }}" class="btn btn-warning">View Reports</a>
+                <div class="card-icon text-warning"><i class="fas fa-signal"></i></div>
+                <h6 class="text-muted">Active Admins (30m)</h6>
+                <h2 class="mb-0">{{ $activeAdmins ?? 0 }}</h2>
             </div>
         </div>
     </div>
-
-    <div class="col-md-3 mb-4">
-        <div class="card text-center h-100">
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card h-100 text-center">
             <div class="card-body">
-                <div class="card-icon text-info">
-                    <i class="fas fa-cogs"></i>
-                </div>
-                <h5 class="card-title">System Settings</h5>
-                <p class="card-text">Configure system preferences</p>
-                <a href="#" class="btn btn-info">Settings</a>
+                <div class="card-icon text-info"><i class="fas fa-globe"></i></div>
+                <h6 class="text-muted">Sessions Today (All)</h6>
+                <h2 class="mb-0">{{ $globalTodaySessions ?? 0 }}</h2>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-md-8">
+<!-- Session Panel and Quick Actions -->
+<div class="row mt-4 g-3">
+    <div class="col-12 col-lg-8">
         <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-activity me-2"></i>Recent Activity
-                </h5>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-stopwatch me-2"></i>Current Session</h5>
+                <span class="badge bg-success" id="heartbeatStatus">Live</span>
             </div>
             <div class="card-body">
+                <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+                    <div>
+                        <div class="text-muted">Started</div>
+                        <div class="fs-5">{{ optional($lastSession?->started_at)->format('M d, Y h:i A') ?? '—' }}</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-muted">Duration</div>
+                        <div class="display-6" id="sessionTimer">00:00:00</div>
+                    </div>
+                    <div>
+                        <div class="text-muted">Last Activity</div>
+                        <div class="fs-5" id="lastActivity">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-history me-2"></i>Recent Sessions</h5>
+            </div>
+            <div class="card-body p-0">
                 <div class="list-group list-group-flush">
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="fas fa-user-plus text-success me-2"></i>
-                            New user registered: John Doe
+                    @forelse(($recentSessions ?? []) as $s)
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-sign-in-alt text-success me-2"></i>
+                                <strong>{{ $s->started_at?->format('M d, Y h:i A') ?? $s->created_at->format('M d, Y h:i A') }}</strong>
+                                <small class="text-muted ms-2">IP: {{ $s->ip_address ?? 'N/A' }}</small>
+                            </div>
+                            <div class="text-end">
+                                <div class="small text-muted">Last: {{ $s->ended_at?->diffForHumans() ?? 'now' }}</div>
+                            </div>
                         </div>
-                        <small class="text-muted">2 hours ago</small>
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="fas fa-clock text-primary me-2"></i>
-                            Time entry submitted by Jane Smith
-                        </div>
-                        <small class="text-muted">4 hours ago</small>
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="fas fa-file-alt text-info me-2"></i>
-                            Monthly report generated
-                        </div>
-                        <small class="text-muted">1 day ago</small>
-                    </div>
+                    @empty
+                        <div class="p-4 text-center text-muted">No session history yet.</div>
+                    @endforelse
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-12 col-lg-4">
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-chart-pie me-2"></i>Quick Stats
-                </h5>
+                <h5 class="card-title mb-0"><i class="fas fa-bolt me-2"></i>Quick Admin Actions</h5>
             </div>
             <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6 mb-3">
-                        <h3 class="text-primary">25</h3>
-                        <small class="text-muted">Total Users</small>
+                <div class="d-grid gap-2">
+                    <a href="{{ route('users.index') }}" class="btn btn-success"><i class="fas fa-users-cog me-2"></i>Manage Users</a>
+                    <a href="{{ route('projects.index') }}" class="btn btn-outline-success"><i class="fas fa-project-diagram me-2"></i>View Projects</a>
+                    <a href="{{ route('analytics') }}" class="btn btn-outline-success"><i class="fas fa-chart-line me-2"></i>Analytics</a>
+                </div>
+                <hr>
+                <div>
+                    <div class="d-flex justify-content-between text-muted">
+                        <span>Avg Daily Sessions</span>
+                        <span>{{ $avgDailySessions ?? 0 }}</span>
                     </div>
-                    <div class="col-6 mb-3">
-                        <h3 class="text-success">142</h3>
-                        <small class="text-muted">Time Entries</small>
-                    </div>
-                    <div class="col-6">
-                        <h3 class="text-warning">8.5h</h3>
-                        <small class="text-muted">Avg Daily</small>
-                    </div>
-                    <div class="col-6">
-                        <h3 class="text-info">98%</h3>
-                        <small class="text-muted">Uptime</small>
+                    <div class="d-flex justify-content-between text-muted">
+                        <span>Total Sessions (All)</span>
+                        <span>{{ $globalTotalSessions ?? 0 }}</span>
                     </div>
                 </div>
             </div>
@@ -150,3 +147,54 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(function(){
+  // Heartbeat every 30s
+  const statusEl = document.getElementById('heartbeatStatus');
+  const lastActivity = document.getElementById('lastActivity');
+  async function beat(){
+    try{
+      const res = await fetch('{{ route('admin.session.heartbeat') }}', {
+        method:'POST',
+        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+      });
+      if(res.ok){
+        statusEl.textContent = 'Live';
+        statusEl.classList.remove('bg-danger');
+        statusEl.classList.add('bg-success');
+        lastActivity.textContent = new Date().toLocaleString();
+      } else {
+        statusEl.textContent = 'Offline';
+        statusEl.classList.remove('bg-success');
+        statusEl.classList.add('bg-danger');
+      }
+    }catch(e){
+      statusEl.textContent = 'Offline';
+      statusEl.classList.remove('bg-success');
+      statusEl.classList.add('bg-danger');
+    }
+  }
+  setInterval(beat, 30000);
+  beat();
+
+  // Session timer from lastSession.started_at
+  const startedAt = "{{ optional($lastSession?->started_at)->format('Y-m-d H:i:s') }}";
+  const timerEl = document.getElementById('sessionTimer');
+  function tick(){
+    if(!startedAt) { timerEl.textContent = '00:00:00'; return; }
+    const start = new Date(startedAt.replace(' ', 'T'));
+    const now = new Date();
+    let diff = Math.max(0, Math.floor((now - start)/1000));
+    const h = String(Math.floor(diff/3600)).padStart(2,'0');
+    diff %= 3600;
+    const m = String(Math.floor(diff/60)).padStart(2,'0');
+    const s = String(diff%60).padStart(2,'0');
+    timerEl.textContent = `${h}:${m}:${s}`;
+  }
+  setInterval(tick, 1000);
+  tick();
+})();
+</script>
+@endpush
