@@ -264,11 +264,29 @@ class ProjectController extends Controller
 
         // Only admins can delete projects
         if ($user->isUser()) {
-            abort(403, 'Unauthorized action. Only administrators can delete projects.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized action. Only administrators can delete projects.'
+            ], 403);
         }
 
-        $project->delete();
-        return redirect()->route('projects.index')->with('success', 'Project deleted successfully!');
+        try {
+            // Delete related records first to avoid foreign key constraints
+            $project->teamMembers()->detach();
+            
+            // Delete the project
+            $project->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Project deleted successfully!'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting project: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

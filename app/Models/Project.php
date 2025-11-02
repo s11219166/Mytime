@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\App;
 use App\Mail\ProjectDueReminderMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 
 class Project extends Model
 {
@@ -43,8 +44,11 @@ class Project extends Model
     protected static function booted()
     {
         static::created(function ($project) {
-            // Send notification when project is created
-            $project->sendNewProjectNotification();
+            // Dispatch notification job instead of sending immediately
+            // This will make project creation faster
+            \Illuminate\Support\Facades\Artisan::queue('project:send-notification', [
+                'project_id' => $project->id
+            ]);
         });
     }
 

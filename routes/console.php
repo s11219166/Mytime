@@ -33,3 +33,8 @@ Schedule::command('projects:check-due-dates')
 Artisan::command('test:new-project-notification', function () {
     $this->call('test:new-project-notification');
 })->purpose('Test new project notification');
+
+// Command for sending project notifications asynchronously
+Artisan::command('project:send-notification {project_id}', function ($project_id) {
+    $this->call('project:send-notification', ['project_id' => $project_id]);
+})->purpose('Send project creation notifications asynchronously');
