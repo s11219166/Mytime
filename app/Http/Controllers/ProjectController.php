@@ -258,7 +258,7 @@ class ProjectController extends Controller
     /**
      * Remove the specified project
      */
-    public function destroy(Project $project)
+    public function destroy($id)
     {
         $user = Auth::user();
 
@@ -271,20 +271,43 @@ class ProjectController extends Controller
         }
 
         try {
+            // Find the project by ID (don't use route model binding to avoid 404 on deleted projects)
+            $project = Project::find($id);
+            
+            if (!$project) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Project not found or already deleted.'
+                ], 404);
+            }
+            
+            $projectName = $project->name;
+            $projectId = $project->id;
+            
             // Log the deletion for debugging
-            \Illuminate\Support\Facades\Log::info('Deleting project: ' . $project->id . ' - ' . $project->name);
+            \Illuminate\Support\Facades\Log::info('Deleting project: ' . $projectId . ' - ' . $projectName);
             
             // Delete related records first to avoid foreign key constraints
-            $project->teamMembers()->detach();
+            try {
+                $project->teamMembers()->detach();
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Error detaching team members: ' . $e->getMessage());
+            }
             
             // Delete the project
-            $deleted = $project->delete();
+            $deleted = $project->forceDelete();
             
             if (!$deleted) {
                 throw new \Exception('Failed to delete project from database');
             }
             
-            \Illuminate\Support\Facades\Log::info('Successfully deleted project: ' . $project->id);
+            // Verify deletion
+            $stillExists = Project::find($projectId);
+            if ($stillExists) {
+                throw new \Exception('Project still exists after deletion attempt');
+            }
+            
+            \Illuminate\Support\Facades\Log::info('Successfully deleted project: ' . $projectId);
             
             return response()->json([
                 'success' => true,

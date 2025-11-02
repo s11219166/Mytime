@@ -236,6 +236,7 @@ function deleteProject(projectId, projectName) {
             console.log('Delete response:', data);
             if (data.success) {
                 showToast(data.message, 'success');
+                  // Redirect to projects list after 1 second to show success message
                 setTimeout(() => {
                     window.location.href = '{{ route("projects.index") }}';
                 }, 1000);
