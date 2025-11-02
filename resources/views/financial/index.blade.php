@@ -1,44 +1,48 @@
 @extends('layouts.app')
 
-@section('title', 'Financial Management')
+@section('title', 'Financial Management - MyTime')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 py-8" x-data="financialDashboard()">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        <!-- Header Section -->
-        <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Financial Management</h1>
-                <p class="text-gray-600 mt-1">Track your income, expenses, savings, and bank deposits</p>
+<div class="container-fluid py-4" x-data="financialDashboard()">
+    <!-- Header Section -->
+    <div class="mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="h3 fw-bold mb-1">
+                    <i class="fas fa-wallet me-2 text-primary"></i>Financial Management
+                </h1>
+                <p class="text-muted mb-0">Track your income, expenses, savings, and bank deposits</p>
             </div>
+            <div class="col-lg-6 text-lg-end mt-3 mt-lg-0">
+                <div class="d-flex gap-2 justify-content-lg-end flex-wrap">
+                    <!-- Privacy Toggle -->
+                    <button @click="togglePrivacy()" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas" :class="hideAmounts ? 'fa-eye-slash' : 'fa-eye'" style="margin-right: 0.5rem;"></i>
+                        <span x-text="hideAmounts ? 'Show Amounts' : 'Hide Amounts'"></span>
+                    </button>
 
-            <div class="flex flex-wrap gap-3">
-                <!-- Privacy Toggle -->
-                <button @click="togglePrivacy()"
-                        class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition flex items-center gap-2">
-                    <span x-show="!hideAmounts">👁️</span>
-                    <span x-show="hideAmounts">🙈</span>
-                    <span x-text="hideAmounts ? 'Show Amounts' : 'Hide Amounts'"></span>
-                </button>
+                    <!-- Add Transaction Button -->
+                    <button @click="openAddModal()" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-2"></i>Add Transaction
+                    </button>
 
-                <!-- Add Transaction Button -->
-                <button @click="openAddModal()"
-                        class="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition shadow-lg flex items-center gap-2">
-                    <span class="text-xl">+</span>
-                    <span>Add Transaction</span>
-                </button>
+                    <!-- Export Button -->
+                    <button @click="exportData()" class="btn btn-success btn-sm">
+                        <i class="fas fa-download me-2"></i>Export CSV
+                    </button>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Filters Section -->
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <!-- Filters Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
                 <!-- Date Range Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                    <select x-model="dateRange" @change="fetchData()"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <div class="col-12 col-md-3">
+                    <label class="form-label small fw-semibold">Date Range</label>
+                    <select x-model="dateRange" @change="fetchData()" class="form-select form-select-sm">
                         <option value="7">Last 7 days</option>
                         <option value="30" selected>Last 30 days</option>
                         <option value="90">Last 3 months</option>
@@ -47,10 +51,9 @@
                 </div>
 
                 <!-- Type Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                    <select x-model="typeFilter" @change="fetchData()"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <div class="col-12 col-md-3">
+                    <label class="form-label small fw-semibold">Type</label>
+                    <select x-model="typeFilter" @change="fetchData()" class="form-select form-select-sm">
                         <option value="">All Types</option>
                         <option value="income">Income</option>
                         <option value="expense">Expense</option>
@@ -60,10 +63,9 @@
                 </div>
 
                 <!-- Category Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                    <select x-model="categoryFilter" @change="fetchData()"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <div class="col-12 col-md-3">
+                    <label class="form-label small fw-semibold">Category</label>
+                    <select x-model="categoryFilter" @change="fetchData()" class="form-select form-select-sm">
                         <option value="">All Categories</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->id }}">{{ $category->icon }} {{ $category->name }}</option>
@@ -71,336 +73,326 @@
                     </select>
                 </div>
 
-                <!-- Export Button -->
-                <div class="flex items-end">
-                    <button @click="exportData()"
-                            class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition flex items-center justify-center gap-2">
-                        <span>📥</span>
-                        <span>Export CSV</span>
+                <!-- Clear Filters -->
+                <div class="col-12 col-md-3 d-flex align-items-end">
+                    <button @click="clearFilters()" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="fas fa-redo me-2"></i>Reset Filters
                     </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Income Card -->
-            <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-green-100 text-sm font-medium">Total Income</p>
-                        <h3 class="text-3xl font-bold mt-2" x-text="hideAmounts ? '****' : formatCurrency(summary.income)"></h3>
-                    </div>
-                    <div class="bg-white bg-opacity-20 rounded-lg p-3">
-                        <span class="text-2xl">💰</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span :class="summary.income_trend >= 0 ? 'text-green-200' : 'text-red-200'"
-                          x-text="(summary.income_trend >= 0 ? '↑' : '↓') + ' ' + Math.abs(summary.income_trend) + '%'"></span>
-                    <span class="text-green-100 text-sm">vs previous period</span>
-                </div>
-            </div>
-
-            <!-- Expenses Card -->
-            <div class="bg-gradient-to-br from-red-500 to-rose-600 rounded-xl shadow-lg p-6 text-white">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-red-100 text-sm font-medium">Total Expenses</p>
-                        <h3 class="text-3xl font-bold mt-2" x-text="hideAmounts ? '****' : formatCurrency(summary.expense)"></h3>
-                    </div>
-                    <div class="bg-white bg-opacity-20 rounded-lg p-3">
-                        <span class="text-2xl">💸</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span :class="summary.expense_trend <= 0 ? 'text-green-200' : 'text-red-200'"
-                          x-text="(summary.expense_trend >= 0 ? '↑' : '↓') + ' ' + Math.abs(summary.expense_trend) + '%'"></span>
-                    <span class="text-red-100 text-sm">vs previous period</span>
-                </div>
-            </div>
-
-            <!-- ANZ 10984661 Card (Savings) -->
-            <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-blue-100 text-sm font-medium">ANZ 10984661</p>
-                        <h3 class="text-3xl font-bold mt-2" x-text="hideAmounts ? '****' : formatCurrency(summary.savings)"></h3>
-                    </div>
-                    <div class="bg-white bg-opacity-20 rounded-lg p-3">
-                        <span class="text-2xl">🏦</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span :class="summary.savings_trend >= 0 ? 'text-green-200' : 'text-red-200'"
-                          x-text="(summary.savings_trend >= 0 ? '↑' : '↓') + ' ' + Math.abs(summary.savings_trend) + '%'"></span>
-                    <span class="text-blue-100 text-sm">vs previous period</span>
-                </div>
-            </div>
-
-            <!-- ANZ Acc 13674771 Card (Bank Deposits) -->
-            <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="text-amber-100 text-sm font-medium">ANZ Acc 13674771</p>
-                        <h3 class="text-3xl font-bold mt-2" x-text="hideAmounts ? '****' : formatCurrency(summary.bank_deposit)"></h3>
-                    </div>
-                    <div class="bg-white bg-opacity-20 rounded-lg p-3">
-                        <span class="text-2xl">🏛️</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span :class="summary.bank_deposit_trend >= 0 ? 'text-green-200' : 'text-red-200'"
-                          x-text="(summary.bank_deposit_trend >= 0 ? '↑' : '↓') + ' ' + Math.abs(summary.bank_deposit_trend) + '%'"></span>
-                    <span class="text-amber-100 text-sm">vs previous period</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Net Balance Card -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4"
-             :class="summary.net_balance >= 0 ? 'border-green-500' : 'border-red-500'">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div class="flex-1">
-                    <p class="text-gray-600 text-sm font-medium mb-1">Net Balance</p>
-                    <p class="text-xs text-gray-500 mb-2">(Income - Expenses - ANZ 10984661 - ANZ Acc 13674771)</p>
-                    <h3 class="text-4xl font-bold"
-                        :class="summary.net_balance >= 0 ? 'text-green-600' : 'text-red-600'"
-                        x-text="hideAmounts ? '****' : formatCurrency(summary.net_balance)"></h3>
-                </div>
-                <div class="text-6xl" x-text="summary.net_balance >= 0 ? '📈' : '📉'"></div>
-            </div>
-        </div>
-
-        <!-- Pending Transactions Summary -->
-        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl shadow-lg p-6 mb-8 border-l-4 border-yellow-500">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-2">
-                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <p class="text-gray-700 text-lg font-semibold">Pending Transactions</p>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <!-- Income Card -->
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-xs text-gray-600">Count</p>
-                            <p class="text-2xl font-bold text-gray-900" x-text="summary.pending_count || 0"></p>
+                            <p class="text-muted small mb-1">Total Income</p>
+                            <h4 class="mb-2" x-text="hideAmounts ? '****' : formatCurrency(summary.income)"></h4>
+                            <small :class="summary.income_trend >= 0 ? 'text-success' : 'text-danger'">
+                                <i :class="summary.income_trend >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" style="margin-right: 0.25rem;"></i>
+                                <span x-text="Math.abs(summary.income_trend) + '% vs previous'"></span>
+                            </small>
                         </div>
-                        <div>
-                            <p class="text-xs text-gray-600">Total Amount</p>
-                            <p class="text-2xl font-bold text-yellow-600" x-text="hideAmounts ? '****' : formatCurrency((summary.pending_income || 0) - (summary.pending_expense || 0))"></p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-600">Income Pending</p>
-                            <p class="text-xl font-bold text-green-600" x-text="hideAmounts ? '****' : formatCurrency(summary.pending_income || 0)"></p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-600">Expense Pending</p>
-                            <p class="text-xl font-bold text-red-600" x-text="hideAmounts ? '****' : formatCurrency(summary.pending_expense || 0)"></p>
+                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                            <i class="fas fa-arrow-up"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Charts Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <!-- Income vs Expense Chart -->
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Income vs Expenses Trend</h3>
-                <div style="height: 300px; position: relative;">
-                    <canvas id="incomeExpenseChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Expense by Category Chart -->
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Expense Breakdown by Category</h3>
-                <div style="height: 300px; position: relative;">
-                    <canvas id="expenseCategoryChart"></canvas>
+        <!-- Expenses Card -->
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Total Expenses</p>
+                            <h4 class="mb-2" x-text="hideAmounts ? '****' : formatCurrency(summary.expense)"></h4>
+                            <small :class="summary.expense_trend <= 0 ? 'text-success' : 'text-danger'">
+                                <i :class="summary.expense_trend >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" style="margin-right: 0.25rem;"></i>
+                                <span x-text="Math.abs(summary.expense_trend) + '% vs previous'"></span>
+                            </small>
+                        </div>
+                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Recent Transactions Table -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xl font-bold text-gray-900">Recent Transactions</h3>
-                    <span class="text-sm text-gray-500">Total: {{ $transactions->total() }} transactions</span>
+        <!-- Savings Card -->
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">ANZ 10984661</p>
+                            <h4 class="mb-2" x-text="hideAmounts ? '****' : formatCurrency(summary.savings)"></h4>
+                            <small :class="summary.savings_trend >= 0 ? 'text-success' : 'text-danger'">
+                                <i :class="summary.savings_trend >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" style="margin-right: 0.25rem;"></i>
+                                <span x-text="Math.abs(summary.savings_trend) + '% vs previous'"></span>
+                            </small>
+                        </div>
+                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                            <i class="fas fa-piggy-bank"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <div class="overflow-x-auto -mx-4 sm:mx-0">
-                <div class="inline-block min-w-full align-middle">
-                    <div class="overflow-hidden">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gradient-to-r from-gray-100 to-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                        Date
-                                    </th>
-                                    <th scope="col" class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                        Type
-                                    </th>
-                                    <th scope="col" class="hidden md:table-cell px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                        Category
-                                    </th>
-                                    <th scope="col" class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                        Amount
-                                    </th>
-                                    <th scope="col" class="hidden lg:table-cell px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th scope="col" class="hidden xl:table-cell px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                        Description
-                                    </th>
-                                    <th scope="col" class="px-3 sm:px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($transactions as $transaction)
-                                <tr class="hover:bg-blue-50 transition-colors duration-150">
-                                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">
-                                            {{ $transaction->transaction_date->format('M d, Y') }}
-                                        </div>
-                                        <div class="text-xs text-gray-500">
-                                            {{ $transaction->transaction_date->format('l') }}
-                                        </div>
-                                    </td>
-                                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 sm:px-3 py-1.5 inline-flex text-xs leading-5 font-bold rounded-full shadow-sm
-                                            @if($transaction->type === 'income') bg-gradient-to-r from-green-400 to-green-500 text-white
-                                            @elseif($transaction->type === 'expense') bg-gradient-to-r from-red-400 to-red-500 text-white
-                                            @elseif($transaction->type === 'savings') bg-gradient-to-r from-blue-400 to-blue-500 text-white
-                                            @else bg-gradient-to-r from-amber-400 to-amber-500 text-white @endif">
-                                            <span class="hidden sm:inline">{{ ucfirst(str_replace('_', ' ', $transaction->type)) }}</span>
-                                            <span class="sm:hidden">{{ substr(ucfirst($transaction->type), 0, 3) }}</span>
-                                        </span>
-                                    </td>
-                                    <td class="hidden md:table-cell px-3 sm:px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <span class="text-xl sm:text-2xl mr-2">{{ $transaction->category->icon }}</span>
-                                            <span class="text-sm font-medium text-gray-900">{{ $transaction->category->name }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap" x-data>
-                                        <div class="text-sm font-bold"
-                                             :class="'{{ $transaction->type }}' === 'income' ? 'text-green-600' : '{{ $transaction->type }}' === 'expense' ? 'text-red-600' : 'text-blue-600'">
-                                            <span x-show="!$root.hideAmounts">${{ number_format($transaction->amount, 2) }}</span>
-                                            <span x-show="$root.hideAmounts" class="text-gray-400">••••</span>
-                                        </div>
-                                    </td>
-                                    <td class="hidden lg:table-cell px-3 sm:px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            @if($transaction->status === 'completed') bg-green-100 text-green-800 border border-green-200
-                                            @elseif($transaction->status === 'pending') bg-yellow-100 text-yellow-800 border border-yellow-200
-                                            @else bg-gray-100 text-gray-800 border border-gray-200 @endif">
-                                            {{ ucfirst($transaction->status) }}
-                                        </span>
-                                    </td>
-                                    <td class="hidden xl:table-cell px-3 sm:px-6 py-4">
-                                        <div class="text-sm text-gray-600 max-w-xs truncate" title="{{ $transaction->description }}">
-                                            {{ $transaction->description ?? '-' }}
-                                        </div>
-                                    </td>
-                                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex flex-col sm:flex-row gap-1 sm:gap-2 items-end sm:items-center justify-end">
-                                            <button @click="openEditModal({{ $transaction->id }})"
-                                                    class="inline-flex items-center px-2 sm:px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-md transition-colors duration-150 text-xs">
-                                                <svg class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                </svg>
-                                                <span class="hidden sm:inline">Edit</span>
-                                            </button>
-                                            <button @click="deleteTransaction({{ $transaction->id }})"
-                                                    class="inline-flex items-center px-2 sm:px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors duration-150 text-xs">
-                                                <svg class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
-                                                <span class="hidden sm:inline">Delete</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="7" class="px-6 py-16 text-center">
-                                        <div class="flex flex-col items-center justify-center">
-                                            <svg class="w-24 h-24 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                            </svg>
-                                            <p class="text-xl font-semibold text-gray-500 mb-2">No transactions found</p>
-                                            <p class="text-sm text-gray-400 mb-4">Start by adding your first transaction</p>
-                                            <button @click="openAddModal()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
-                                                Add Transaction
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+        <!-- Bank Deposits Card -->
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">ANZ Acc 13674771</p>
+                            <h4 class="mb-2" x-text="hideAmounts ? '****' : formatCurrency(summary.bank_deposit)"></h4>
+                            <small :class="summary.bank_deposit_trend >= 0 ? 'text-success' : 'text-danger'">
+                                <i :class="summary.bank_deposit_trend >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" style="margin-right: 0.25rem;"></i>
+                                <span x-text="Math.abs(summary.bank_deposit_trend) + '% vs previous'"></span>
+                            </small>
+                        </div>
+                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                            <i class="fas fa-university"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Enhanced Pagination -->
-            @if($transactions->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <div class="flex items-center justify-between">
-                    <div class="text-sm text-gray-700">
-                        Showing <span class="font-semibold">{{ $transactions->firstItem() }}</span>
-                        to <span class="font-semibold">{{ $transactions->lastItem() }}</span>
-                        of <span class="font-semibold">{{ $transactions->total() }}</span> results
-                    </div>
-                    <div>
-                        {{ $transactions->links() }}
-                    </div>
-                </div>
-            </div>
-            @endif
         </div>
     </div>
 
-    <!-- Add/Edit Transaction Modal -->
-    <div x-show="showModal"
-         x-cloak
-         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-         @click.self="closeModal()">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-screen overflow-y-auto"
-             @click.stop>
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-xl font-semibold text-gray-900" x-text="editMode ? 'Edit Transaction' : 'Add New Transaction'"></h3>
+    <!-- Net Balance Card -->
+    <div class="card border-0 shadow-sm mb-4" :class="summary.net_balance >= 0 ? 'border-start border-success' : 'border-start border-danger'" style="border-width: 4px;">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <p class="text-muted small mb-1">Net Balance</p>
+                    <small class="text-muted d-block mb-2">(Income - Expenses - ANZ 10984661 - ANZ Acc 13674771)</small>
+                    <h2 :class="summary.net_balance >= 0 ? 'text-success' : 'text-danger'" x-text="hideAmounts ? '****' : formatCurrency(summary.net_balance)"></h2>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <div style="font-size: 3rem;" x-text="summary.net_balance >= 0 ? '📈' : '📉'"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Transactions Summary -->
+    @if($summary['pending_count'] > 0)
+    <div class="card border-0 shadow-sm mb-4" style="border-left: 4px solid #f59e0b;">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="fas fa-hourglass-half text-warning" style="font-size: 1.5rem;"></i>
+                        <h5 class="mb-0">Pending Transactions</h5>
+                    </div>
+                    <div class="row g-3 mt-2">
+                        <div class="col-6 col-md-3">
+                            <small class="text-muted d-block">Count</small>
+                            <h5 class="mb-0" x-text="summary.pending_count"></h5>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <small class="text-muted d-block">Total Amount</small>
+                            <h5 class="mb-0" x-text="hideAmounts ? '****' : formatCurrency(summary.pending_total)"></h5>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <small class="text-muted d-block">Income Pending</small>
+                            <h5 class="mb-0 text-success" x-text="hideAmounts ? '****' : formatCurrency(summary.pending_income)"></h5>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <small class="text-muted d-block">Expense Pending</small>
+                            <h5 class="mb-0 text-danger" x-text="hideAmounts ? '****' : formatCurrency(summary.pending_expense)"></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Charts Section -->
+    <div class="row g-4 mb-4">
+        <!-- Income vs Expense Chart -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h6 class="mb-0">Income vs Expenses Trend</h6>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="incomeExpenseChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense by Category Chart -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h6 class="mb-0">Expense Breakdown by Category</h6>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="expenseCategoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Recent Transactions</h6>
+                <small class="text-muted">Total: {{ $transactions->total() }} transactions</small>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            @if($transactions->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="small fw-bold">Date</th>
+                                <th class="small fw-bold">Type</th>
+                                <th class="small fw-bold d-none d-md-table-cell">Category</th>
+                                <th class="small fw-bold">Amount</th>
+                                <th class="small fw-bold d-none d-lg-table-cell">Status</th>
+                                <th class="small fw-bold d-none d-xl-table-cell">Description</th>
+                                <th class="small fw-bold text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($transactions as $transaction)
+                            <tr>
+                                <td>
+                                    <div class="small fw-semibold">{{ $transaction->transaction_date->format('M d, Y') }}</div>
+                                    <small class="text-muted">{{ $transaction->transaction_date->format('l') }}</small>
+                                </td>
+                                <td>
+                                    @php
+                                        $typeColors = [
+                                            'income' => 'success',
+                                            'expense' => 'danger',
+                                            'savings' => 'info',
+                                            'bank_deposit' => 'warning'
+                                        ];
+                                    @endphp
+                                    <span class="badge bg-{{ $typeColors[$transaction->type] ?? 'secondary' }}">
+                                        {{ ucfirst(str_replace('_', ' ', $transaction->type)) }}
+                                    </span>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span style="font-size: 1.25rem;">{{ $transaction->category->icon }}</span>
+                                        <span class="small">{{ $transaction->category->name }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="small fw-semibold" :class="'{{ $transaction->type }}' === 'income' ? 'text-success' : '{{ $transaction->type }}' === 'expense' ? 'text-danger' : 'text-info'">
+                                        <span x-show="!$root.hideAmounts">${{ number_format($transaction->amount, 2) }}</span>
+                                        <span x-show="$root.hideAmounts" class="text-muted">••••</span>
+                                    </div>
+                                </td>
+                                <td class="d-none d-lg-table-cell">
+                                    @php
+                                        $statusColors = [
+                                            'completed' => 'success',
+                                            'pending' => 'warning',
+                                            'cancelled' => 'secondary'
+                                        ];
+                                    @endphp
+                                    <span class="badge bg-{{ $statusColors[$transaction->status] ?? 'secondary' }}">
+                                        {{ ucfirst($transaction->status) }}
+                                    </span>
+                                </td>
+                                <td class="d-none d-xl-table-cell">
+                                    <small class="text-muted text-truncate" style="max-width: 200px;" title="{{ $transaction->description }}">
+                                        {{ $transaction->description ?? '-' }}
+                                    </small>
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button @click="openEditModal({{ $transaction->id }})" class="btn btn-outline-primary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button @click="deleteTransaction({{ $transaction->id }})" class="btn btn-outline-danger" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                @if($transactions->hasPages())
+                <div class="card-footer bg-white border-top">
+                    <div class="row align-items-center gy-3">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                Showing <strong>{{ $transactions->firstItem() }}</strong> to
+                                <strong>{{ $transactions->lastItem() }}</strong> of
+                                <strong>{{ $transactions->total() }}</strong> results
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <nav aria-label="Transactions pagination">
+                                {{ $transactions->links('pagination::bootstrap-4') }}
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                @endif
+            @else
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox" style="font-size: 3rem; color: #d1d5db;"></i>
+                    <h5 class="mt-3 text-muted">No transactions found</h5>
+                    <p class="text-muted mb-3">Start by adding your first transaction</p>
+                    <button @click="openAddModal()" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-2"></i>Add Transaction
+                    </button>
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Transaction Modal -->
+<div x-show="showModal" x-cloak class="modal fade" id="transactionModal" tabindex="-1" :class="showModal ? 'show d-block' : ''">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0">
+            <div class="modal-header bg-light border-0">
+                <h5 class="modal-title" x-text="editMode ? 'Edit Transaction' : 'Add New Transaction'"></h5>
+                <button type="button" class="btn-close" @click="closeModal()"></button>
             </div>
 
-            <form @submit.prevent="submitTransaction()" class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form @submit.prevent="submitTransaction()" class="modal-body">
+                <div class="row g-3">
                     <!-- Transaction Date -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Date <span class="text-red-500">*</span>
-                        </label>
-                        <input type="date"
-                               x-model="formData.transaction_date"
-                               :max="new Date().toISOString().split('T')[0]"
-                               required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-semibold">Date <span class="text-danger">*</span></label>
+                        <input type="date" x-model="formData.transaction_date" :max="new Date().toISOString().split('T')[0]" required class="form-control">
                     </div>
 
                     <!-- Type -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Type <span class="text-red-500">*</span>
-                        </label>
-                        <select x-model="formData.type"
-                                @change="filterCategoriesByType()"
-                                required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-semibold">Type <span class="text-danger">*</span></label>
+                        <select x-model="formData.type" @change="filterCategoriesByType()" required class="form-select">
                             <option value="">Select Type</option>
                             <option value="income">Income</option>
                             <option value="expense">Expense</option>
@@ -410,13 +402,9 @@
                     </div>
 
                     <!-- Category -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Category <span class="text-red-500">*</span>
-                        </label>
-                        <select x-model="formData.category_id"
-                                required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-semibold">Category <span class="text-danger">*</span></label>
+                        <select x-model="formData.category_id" required class="form-select">
                             <option value="">Select Category</option>
                             <template x-for="category in filteredCategories" :key="category.id">
                                 <option :value="category.id" x-text="category.icon + ' ' + category.name"></option>
@@ -425,27 +413,15 @@
                     </div>
 
                     <!-- Amount -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Amount <span class="text-red-500">*</span>
-                        </label>
-                        <input type="number"
-                               x-model="formData.amount"
-                               step="0.01"
-                               min="0.01"
-                               required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="0.00">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-semibold">Amount <span class="text-danger">*</span></label>
+                        <input type="number" x-model="formData.amount" step="0.01" min="0.01" required class="form-control" placeholder="0.00">
                     </div>
 
                     <!-- Status -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Status <span class="text-red-500">*</span>
-                        </label>
-                        <select x-model="formData.status"
-                                required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-semibold">Status <span class="text-danger">*</span></label>
+                        <select x-model="formData.status" required class="form-select">
                             <option value="completed">Completed</option>
                             <option value="pending">Pending</option>
                             <option value="cancelled">Cancelled</option>
@@ -453,37 +429,22 @@
                     </div>
 
                     <!-- Reference Number -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Reference Number
-                        </label>
-                        <input type="text"
-                               x-model="formData.reference_number"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Optional">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-semibold">Reference Number</label>
+                        <input type="text" x-model="formData.reference_number" class="form-control" placeholder="Optional">
                     </div>
 
                     <!-- Description -->
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Description
-                        </label>
-                        <textarea x-model="formData.description"
-                                  rows="3"
-                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  placeholder="Add any notes or details..."></textarea>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Description</label>
+                        <textarea x-model="formData.description" rows="3" class="form-control" placeholder="Add any notes or details..."></textarea>
                     </div>
                 </div>
 
                 <!-- Form Actions -->
-                <div class="flex justify-end gap-3 mt-6">
-                    <button type="button"
-                            @click="closeModal()"
-                            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                            class="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition shadow-lg">
+                <div class="modal-footer border-0 mt-4">
+                    <button type="button" @click="closeModal()" class="btn btn-outline-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
                         <span x-text="editMode ? 'Update Transaction' : 'Add Transaction'"></span>
                     </button>
                 </div>
@@ -491,20 +452,20 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Backdrop -->
+<div x-show="showModal" x-cloak class="modal-backdrop fade" :class="showModal ? 'show' : ''"></div>
 @endsection
 
 @push('scripts')
 <script>
-    // Pass categories data to JavaScript
     window.financialCategories = @json($categories);
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <script src="{{ asset('js/financial.js') }}"></script>
 <script>
-    // Initialize charts after page load
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Initializing financial dashboard charts...');
-        // Charts will be initialized by Alpine.js init()
+        console.log('Financial dashboard initialized');
     });
 </script>
 @endpush
@@ -513,5 +474,7 @@
 <link rel="stylesheet" href="{{ asset('css/financial.css') }}">
 <style>
     [x-cloak] { display: none !important; }
+    .modal.show { display: block; }
+    .modal-backdrop.show { opacity: 0.5; }
 </style>
 @endpush

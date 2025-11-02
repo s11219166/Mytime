@@ -386,6 +386,12 @@
 <script>
 function deleteProject(projectId, projectName) {
     if (confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
+        const deleteBtn = event.target.closest('button');
+        if (deleteBtn) {
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        }
+
         fetch(`/projects/${projectId}`, {
             method: 'DELETE',
             headers: {
@@ -394,20 +400,50 @@ function deleteProject(projectId, projectName) {
                 'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Delete response:', data);
             if (data.success) {
                 showToast(data.message, 'success');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                // Remove the row from DOM immediately
+                const row = deleteBtn ? deleteBtn.closest('tr') || deleteBtn.closest('.card') : null;
+                if (row) {
+                    row.style.opacity = '0';
+                    row.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => {
+                        row.remove();
+                        // Check if there are any projects left
+                        const remainingRows = document.querySelectorAll('tbody tr, .card.mb-3').length;
+                        if (remainingRows === 0) {
+                            window.location.reload();
+                        }
+                    }, 300);
+                } else {
+                    // Fallback to full reload
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
             } else {
                 showToast(data.message || 'Error deleting project', 'danger');
+                if (deleteBtn) {
+                    deleteBtn.disabled = false;
+                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                }
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showToast('Error deleting project', 'danger');
+            showToast('Error deleting project: ' + error.message, 'danger');
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            }
         });
     }
 }

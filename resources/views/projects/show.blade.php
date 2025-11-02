@@ -212,6 +212,12 @@
 <script>
 function deleteProject(projectId, projectName) {
     if (confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
+        const deleteBtn = event.target.closest('button');
+        if (deleteBtn) {
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Deleting...';
+        }
+
         fetch(`/projects/${projectId}`, {
             method: 'DELETE',
             headers: {
@@ -220,8 +226,14 @@ function deleteProject(projectId, projectName) {
                 'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Delete response:', data);
             if (data.success) {
                 showToast(data.message, 'success');
                 setTimeout(() => {
@@ -229,11 +241,19 @@ function deleteProject(projectId, projectName) {
                 }, 1000);
             } else {
                 showToast(data.message || 'Error deleting project', 'danger');
+                if (deleteBtn) {
+                    deleteBtn.disabled = false;
+                    deleteBtn.innerHTML = '<i class="fas fa-trash me-2"></i>Delete Project';
+                }
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showToast('Error deleting project', 'danger');
+            showToast('Error deleting project: ' + error.message, 'danger');
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = '<i class="fas fa-trash me-2"></i>Delete Project';
+            }
         });
     }
 }

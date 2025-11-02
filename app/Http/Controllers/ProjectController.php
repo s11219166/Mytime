@@ -271,17 +271,27 @@ class ProjectController extends Controller
         }
 
         try {
+            // Log the deletion for debugging
+            \Illuminate\Support\Facades\Log::info('Deleting project: ' . $project->id . ' - ' . $project->name);
+            
             // Delete related records first to avoid foreign key constraints
             $project->teamMembers()->detach();
             
             // Delete the project
-            $project->delete();
+            $deleted = $project->delete();
+            
+            if (!$deleted) {
+                throw new \Exception('Failed to delete project from database');
+            }
+            
+            \Illuminate\Support\Facades\Log::info('Successfully deleted project: ' . $project->id);
             
             return response()->json([
                 'success' => true,
                 'message' => 'Project deleted successfully!'
             ], 200);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error deleting project: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error deleting project: ' . $e->getMessage()
