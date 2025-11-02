@@ -288,7 +288,7 @@ class ProjectController extends Controller
             $project->teamMembers()->attach($teamData);
         }
 
-        return redirect()->route('projects.index')->with('success', 'Project updated successfully!');
+        return redirect()->route('projects.index', ['t' => time()])->with('success', 'Project updated successfully!');
     }
 
     /**

@@ -409,9 +409,9 @@ function deleteProject(projectId, projectName) {
         .then(data => {
             if (data.success) {
                 showToast(data.message, 'success');
-                // Reload page after 1 second to show updated list
+                // Reload page after 1 second to show updated list with cache-busting
                 setTimeout(() => {
-                    location.reload();
+                    window.location.href = '/projects?t=' + Date.now();
                 }, 1000);
             } else {
                 showToast(data.message || 'Error deleting project', 'danger');
