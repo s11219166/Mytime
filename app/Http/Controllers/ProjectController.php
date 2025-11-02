@@ -410,4 +410,136 @@ class ProjectController extends Controller
             'progress' => $project->progress
         ]);
     }
+
+    /**
+     * Get updated projects for real-time updates
+     */
+    public function getUpdates(Request $request)
+    {
+        $user = Auth::user();
+        $lastUpdate = $request->query('last_update', 0);
+        
+        // Build base query
+        $baseQuery = \Illuminate\Support\Facades\DB::table('projects')
+            ->select('projects.*');
+        
+        // Role-based filtering
+        if ($user->isUser()) {
+            $baseQuery->where(function($q) use ($user) {
+                $q->where('created_by', $user->id)
+                  ->orWhereIn('id', function($subQuery) use ($user) {
+                      $subQuery->select('project_id')
+                               ->from('project_user')
+                               ->where('user_id', $user->id);
+                  });
+            });
+        }
+        
+        // Filter by status if provided
+        if ($request->filled('status') && $request->status !== 'all') {
+            $baseQuery->where('status', $request->status);
+        }
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $baseQuery->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Get project IDs
+        $projectIds = $baseQuery->pluck('id')->toArray();
+        
+        // Load projects with relationships
+        $projects = Project::with(['creator', 'teamMembers'])
+            ->whereIn('id', $projectIds)
+            ->orderByRaw("CASE 
+                WHEN status = 'completed' THEN 2
+                WHEN status = 'cancelled' THEN 2
+                ELSE 1
+            END ASC")
+            ->orderByRaw("CASE 
+                WHEN end_date IS NULL THEN 1
+                ELSE 0
+            END ASC")
+            ->orderBy('end_date', 'ASC')
+            ->latest('updated_at')
+            ->get();
+
+        // Format projects for response
+        $formattedProjects = $projects->map(function ($project) {
+            return [
+                'id' => $project->id,
+                'name' => $project->name,
+                'description' => $project->description,
+                'status' => $project->status,
+                'priority' => $project->priority,
+                'progress' => $project->progress,
+                'budget' => $project->budget,
+                'start_date' => $project->start_date->format('M d, Y'),
+                'end_date' => $project->end_date ? $project->end_date->format('M d, Y') : null,
+                'creator' => $project->creator ? [
+                    'id' => $project->creator->id,
+                    'name' => $project->creator->name,
+                ] : null,
+                'team_members' => $project->teamMembers->map(function ($member) {
+                    return [
+                        'id' => $member->id,
+                        'name' => $member->name,
+                    ];
+                })->toArray(),
+                'updated_at' => $project->updated_at->timestamp,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'projects' => $formattedProjects,
+            'timestamp' => now()->timestamp,
+        ]);
+    }
+
+    /**
+     * Get project statistics for real-time updates
+     */
+    public function getStats(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->isAdmin()) {
+            $stats = [
+                'total' => \Illuminate\Support\Facades\DB::table('projects')->count(),
+                'active' => \Illuminate\Support\Facades\DB::table('projects')->whereIn('status', ['active', 'inprogress'])->count(),
+                'pending' => \Illuminate\Support\Facades\DB::table('projects')->whereIn('status', ['review_pending', 'awaiting_input', 'paused'])->count(),
+                'completed' => \Illuminate\Support\Facades\DB::table('projects')->where('status', 'completed')->count(),
+                'overdue' => \Illuminate\Support\Facades\DB::table('projects')->where('end_date', '<', now())
+                    ->whereNotIn('status', ['completed', 'cancelled'])
+                    ->count(),
+            ];
+        } else {
+            // Stats for regular users (only their projects)
+            $userProjectIds = \Illuminate\Support\Facades\DB::table('projects')
+                ->where('created_by', $user->id)
+                ->orWhereIn('id', function($q) use ($user) {
+                    $q->select('project_id')
+                      ->from('project_user')
+                      ->where('user_id', $user->id);
+                })
+                ->pluck('id');
+
+            $stats = [
+                'total' => $userProjectIds->count(),
+                'active' => \Illuminate\Support\Facades\DB::table('projects')->whereIn('id', $userProjectIds)->whereIn('status', ['active', 'inprogress'])->count(),
+                'pending' => \Illuminate\Support\Facades\DB::table('projects')->whereIn('id', $userProjectIds)->whereIn('status', ['review_pending', 'awaiting_input', 'paused'])->count(),
+                'completed' => \Illuminate\Support\Facades\DB::table('projects')->whereIn('id', $userProjectIds)->where('status', 'completed')->count(),
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'stats' => $stats,
+            'timestamp' => now()->timestamp,
+        ]);
+    }
 }
