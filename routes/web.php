@@ -108,7 +108,6 @@ Route::middleware('auth')->group(function () {
 
     // Projects Routes
     Route::resource('projects', ProjectController::class);
-    Route::delete('/projects/{id}', [ProjectController::class, 'destroy'])->name('projects.destroy');
     Route::post('/projects/{project}/progress', [ProjectController::class, 'updateProgress'])->name('projects.progress.update');
     Route::post('/projects/{project}/mark-complete', [ProjectController::class, 'markComplete'])->name('projects.mark-complete');
 

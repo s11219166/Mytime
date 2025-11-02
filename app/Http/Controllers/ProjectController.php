@@ -258,7 +258,7 @@ class ProjectController extends Controller
     /**
      * Remove the specified project
      */
-    public function destroy($id)
+    public function destroy(Project $project)
     {
         $user = Auth::user();
 
@@ -271,16 +271,6 @@ class ProjectController extends Controller
         }
 
         try {
-            // Find the project by ID (don't use route model binding to avoid 404 on deleted projects)
-            $project = Project::find($id);
-            
-            if (!$project) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Project not found or already deleted.'
-                ], 404);
-            }
-            
             $projectName = $project->name;
             $projectId = $project->id;
             
@@ -295,7 +285,7 @@ class ProjectController extends Controller
             }
             
             // Delete the project
-            $deleted = $project->forceDelete();
+            $deleted = $project->delete();
             
             if (!$deleted) {
                 throw new \Exception('Failed to delete project from database');
