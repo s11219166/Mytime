@@ -366,3 +366,6 @@ Route::get('/fix-419', function() {
         ], 500);
     }
 })->name('fix-419');
+
+// Include diagnostic routes
+require __DIR__ . '/diagnostic.php';

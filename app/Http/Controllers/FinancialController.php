@@ -19,6 +19,9 @@ class FinancialController extends Controller
      */
     public function index(Request $request)
     {
+        // Clear cache to ensure fresh data
+        \Illuminate\Support\Facades\Cache::flush();
+        
         $user = Auth::user();
 
         // Get filter parameters
@@ -36,22 +39,28 @@ class FinancialController extends Controller
             default => Carbon::now()->subDays(30)
         };
 
-        // Get transactions with filters (exclude soft deleted)
-        $query = FinancialTransaction::with('category')
-            ->forUser($user->id)
-            ->active()
-            ->dateRange($startDate, $endDate)
-            ->orderBy('transaction_date', 'desc');
+        // Use raw query to bypass any caching issues
+        $baseQuery = DB::table('financial_transactions')
+            ->where('user_id', $user->id)
+            ->whereNull('deleted_at')
+            ->whereBetween('transaction_date', [$startDate, $endDate]);
 
         if ($type) {
-            $query->ofType($type);
+            $baseQuery->where('type', $type);
         }
 
         if ($categoryId) {
-            $query->byCategory($categoryId);
+            $baseQuery->where('category_id', $categoryId);
         }
 
-        $transactions = $query->paginate(15);
+        // Get transaction IDs from raw query
+        $transactionIds = $baseQuery->pluck('id')->toArray();
+
+        // Now use Eloquent to load with relationships
+        $transactions = FinancialTransaction::with('category')
+            ->whereIn('id', $transactionIds)
+            ->orderBy('transaction_date', 'desc')
+            ->paginate(15);
 
         // Get categories for user
         $categories = FinancialCategory::forUser($user->id)->get();

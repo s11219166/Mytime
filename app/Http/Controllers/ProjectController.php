@@ -14,34 +14,43 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
+        // Clear any cached queries
+        \Illuminate\Support\Facades\Cache::flush();
+        
         $user = Auth::user();
-        $query = Project::with(['creator', 'teamMembers']);
-
+        
+        // Use raw query to bypass any caching issues
+        $baseQuery = \Illuminate\Support\Facades\DB::table('projects')
+            ->select('projects.*');
+        
         // Role-based filtering
         if ($user->isUser()) {
             // Regular users can only see projects they're assigned to or created
-            $query->where(function($q) use ($user) {
+            $baseQuery->where(function($q) use ($user) {
                 $q->where('created_by', $user->id)
-                  ->orWhereHas('teamMembers', function($q) use ($user) {
-                      $q->where('users.id', $user->id);
+                  ->orWhereIn('id', function($subQuery) use ($user) {
+                      $subQuery->select('project_id')
+                               ->from('project_user')
+                               ->where('user_id', $user->id);
                   });
             });
         }
-        // Admins can see all projects (no filtering needed)
-
+        
         // Filter by status if provided
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            $baseQuery->where('status', $request->status);
         }
 
         // Search functionality
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
+            $baseQuery->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
                   ->orWhere('description', 'like', '%' . $request->search . '%');
+            });
         }
 
         // Sort by due dates (upcoming first), completed projects at the end
-        $query->orderByRaw("CASE 
+        $baseQuery->orderByRaw("CASE 
             WHEN status = 'completed' THEN 2
             WHEN status = 'cancelled' THEN 2
             ELSE 1
@@ -60,35 +69,57 @@ class ProjectController extends Controller
             $perPage = 25;
         }
 
-        $projects = $query->paginate($perPage)->appends([
-            'status' => $request->status,
-            'search' => $request->search,
-            'per_page' => $perPage,
-        ]);
+        // Get raw results and convert to models
+        $projectIds = $baseQuery->pluck('id')->toArray();
+        
+        // Now use Eloquent to load with relationships
+        $projects = Project::with(['creator', 'teamMembers'])
+            ->whereIn('id', $projectIds)
+            ->orderByRaw("CASE 
+                WHEN status = 'completed' THEN 2
+                WHEN status = 'cancelled' THEN 2
+                ELSE 1
+            END ASC")
+            ->orderByRaw("CASE 
+                WHEN end_date IS NULL THEN 1
+                ELSE 0
+            END ASC")
+            ->orderBy('end_date', 'ASC')
+            ->latest('updated_at')
+            ->paginate($perPage)
+            ->appends([
+                'status' => $request->status,
+                'search' => $request->search,
+                'per_page' => $perPage,
+            ]);
 
         // Get project statistics based on user role
         if ($user->isAdmin()) {
             $stats = [
-                'total' => Project::count(),
-                'active' => Project::whereIn('status', ['active', 'inprogress'])->count(),
-                'pending' => Project::whereIn('status', ['review_pending', 'awaiting_input', 'paused'])->count(),
-                'completed' => Project::where('status', 'completed')->count(),
-                'overdue' => Project::where('end_date', '<', now())
+                'total' => \Illuminate\Support\Facades\DB::table('projects')->count(),
+                'active' => \Illuminate\Support\Facades\DB::table('projects')->whereIn('status', ['active', 'inprogress'])->count(),
+                'pending' => \Illuminate\Support\Facades\DB::table('projects')->whereIn('status', ['review_pending', 'awaiting_input', 'paused'])->count(),
+                'completed' => \Illuminate\Support\Facades\DB::table('projects')->where('status', 'completed')->count(),
+                'overdue' => \Illuminate\Support\Facades\DB::table('projects')->where('end_date', '<', now())
                     ->whereNotIn('status', ['completed', 'cancelled'])
                     ->count(),
             ];
         } else {
             // Stats for regular users (only their projects)
-            $userProjectIds = Project::where('created_by', $user->id)
-                ->orWhereHas('teamMembers', function($q) use ($user) {
-                    $q->where('users.id', $user->id);
-                })->pluck('id');
+            $userProjectIds = \Illuminate\Support\Facades\DB::table('projects')
+                ->where('created_by', $user->id)
+                ->orWhereIn('id', function($q) use ($user) {
+                    $q->select('project_id')
+                      ->from('project_user')
+                      ->where('user_id', $user->id);
+                })
+                ->pluck('id');
 
             $stats = [
                 'total' => $userProjectIds->count(),
-                'active' => Project::whereIn('id', $userProjectIds)->whereIn('status', ['active', 'inprogress'])->count(),
-                'pending' => Project::whereIn('id', $userProjectIds)->whereIn('status', ['review_pending', 'awaiting_input', 'paused'])->count(),
-                'completed' => Project::whereIn('id', $userProjectIds)->where('status', 'completed')->count(),
+                'active' => \Illuminate\Support\Facades\DB::table('projects')->whereIn('id', $userProjectIds)->whereIn('status', ['active', 'inprogress'])->count(),
+                'pending' => \Illuminate\Support\Facades\DB::table('projects')->whereIn('id', $userProjectIds)->whereIn('status', ['review_pending', 'awaiting_input', 'paused'])->count(),
+                'completed' => \Illuminate\Support\Facades\DB::table('projects')->whereIn('id', $userProjectIds)->where('status', 'completed')->count(),
             ];
         }
 
