@@ -413,7 +413,7 @@ function checkForProjectUpdates() {
         last_update: lastUpdateTimestamp
     });
     
-    fetch(`/api/projects/updates?${params}`, {
+    fetch(`/projects/api/updates?${params}`, {
         headers: {
             'Accept': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -440,7 +440,7 @@ function checkForStatsUpdates() {
         status: document.querySelector('select[name="status"]')?.value || 'all',
     });
     
-    fetch(`/api/projects/stats?${params}`, {
+    fetch(`/projects/api/stats?${params}`, {
         headers: {
             'Accept': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content

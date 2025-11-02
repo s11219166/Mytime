@@ -110,6 +110,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('projects', ProjectController::class);
     Route::post('/projects/{project}/progress', [ProjectController::class, 'updateProgress'])->name('projects.progress.update');
     Route::post('/projects/{project}/mark-complete', [ProjectController::class, 'markComplete'])->name('projects.mark-complete');
+    
+    // Real-time project updates (web routes for better compatibility)
+    Route::get('/projects/api/updates', [ProjectController::class, 'getUpdates'])->name('projects.api.updates');
+    Route::get('/projects/api/stats', [ProjectController::class, 'getStats'])->name('projects.api.stats');
 
     // Analytics Routes
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
