@@ -211,10 +211,25 @@
                                 </td>
                                 <td data-field="progress">
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="progress" style="width: 100px; height: 20px;">
+                                        <div class="progress" style="width: 100px; height: 20px; cursor: pointer;" title="Click to update progress" onclick="showProgressModal({{ $project->id }}, {{ $project->progress }})">
                                             <div class="progress-bar" style="width: {{ $project->progress }}%"></div>
                                         </div>
                                         <small>{{ $project->progress }}%</small>
+                                        @if($project->progress < 100)
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-success btn-sm" title="Add 5%" onclick="quickUpdateProgress({{ $project->id }}, 5)">
+                                                    <i class="fas fa-plus"></i>5%
+                                                </button>
+                                                <button type="button" class="btn btn-outline-success btn-sm" title="Add 10%" onclick="quickUpdateProgress({{ $project->id }}, 10)">
+                                                    <i class="fas fa-plus"></i>10%
+                                                </button>
+                                                <button type="button" class="btn btn-outline-success btn-sm" title="Add 25%" onclick="quickUpdateProgress({{ $project->id }}, 25)">
+                                                    <i class="fas fa-plus"></i>25%
+                                                </button>
+                                            </div>
+                                        @else
+                                            <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Complete</span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td data-field="budget">
@@ -442,6 +457,168 @@ function showToast(message, type = 'info') {
     `;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 5000);
+}
+
+function quickUpdateProgress(projectId, increment) {
+    const btn = event.target.closest('button');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+
+    fetch(`/projects/${projectId}/quick-progress`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            increment: increment
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Update the progress bar and percentage
+            const row = document.querySelector(`tr[data-project-id="${projectId}"]`);
+            if (row) {
+                const progressCell = row.querySelector('[data-field="progress"]');
+                const progressBar = progressCell.querySelector('.progress-bar');
+                const progressText = progressCell.querySelector('small');
+                
+                progressBar.style.width = data.progress + '%';
+                progressText.textContent = data.progress + '%';
+
+                // If auto-completed, update status and show message
+                if (data.auto_completed) {
+                    showToast('🎉 Project completed! Status automatically updated to Complete.', 'success');
+                    
+                    // Update status badge
+                    const statusCell = row.querySelector('[data-field="status"]');
+                    statusCell.innerHTML = '<span class="badge bg-success">Completed</span>';
+                    
+                    // Replace quick buttons with complete badge
+                    const btnGroup = progressCell.querySelector('.btn-group');
+                    if (btnGroup) {
+                        btnGroup.remove();
+                    }
+                    const completeSpan = document.createElement('span');
+                    completeSpan.className = 'badge bg-success';
+                    completeSpan.innerHTML = '<i class="fas fa-check-circle me-1"></i>Complete';
+                    progressCell.appendChild(completeSpan);
+                    
+                    // Reload page after 2 seconds to refresh stats
+                    setTimeout(() => {
+                        window.location.href = '/projects?t=' + Date.now();
+                    }, 2000);
+                } else {
+                    showToast(`Progress updated to ${data.progress}%`, 'success');
+                }
+            }
+            
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-plus"></i>' + increment + '%';
+            }
+        } else {
+            showToast(data.message || 'Error updating progress', 'danger');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-plus"></i>' + increment + '%';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error updating progress: ' + error.message, 'danger');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-plus"></i>' + increment + '%';
+        }
+    });
+}
+
+function showProgressModal(projectId, currentProgress) {
+    const newProgress = prompt(`Enter new progress percentage (0-100):\n\nCurrent: ${currentProgress}%`, currentProgress);
+    
+    if (newProgress !== null) {
+        const progress = parseInt(newProgress);
+        
+        if (isNaN(progress) || progress < 0 || progress > 100) {
+            showToast('Please enter a valid number between 0 and 100', 'warning');
+            return;
+        }
+
+        fetch(`/projects/${projectId}/progress`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                progress: progress
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Update the progress bar and percentage
+                const row = document.querySelector(`tr[data-project-id="${projectId}"]`);
+                if (row) {
+                    const progressCell = row.querySelector('[data-field="progress"]');
+                    const progressBar = progressCell.querySelector('.progress-bar');
+                    const progressText = progressCell.querySelector('small');
+                    
+                    progressBar.style.width = data.progress + '%';
+                    progressText.textContent = data.progress + '%';
+
+                    // If auto-completed, update status and show message
+                    if (data.auto_completed) {
+                        showToast('🎉 Project completed! Status automatically updated to Complete.', 'success');
+                        
+                        // Update status badge
+                        const statusCell = row.querySelector('[data-field="status"]');
+                        statusCell.innerHTML = '<span class="badge bg-success">Completed</span>';
+                        
+                        // Replace quick buttons with complete badge
+                        const btnGroup = progressCell.querySelector('.btn-group');
+                        if (btnGroup) {
+                            btnGroup.remove();
+                        }
+                        const completeSpan = document.createElement('span');
+                        completeSpan.className = 'badge bg-success';
+                        completeSpan.innerHTML = '<i class="fas fa-check-circle me-1"></i>Complete';
+                        progressCell.appendChild(completeSpan);
+                        
+                        // Reload page after 2 seconds to refresh stats
+                        setTimeout(() => {
+                            window.location.href = '/projects?t=' + Date.now();
+                        }, 2000);
+                    } else {
+                        showToast(`Progress updated to ${data.progress}%`, 'success');
+                    }
+                }
+            } else {
+                showToast(data.message || 'Error updating progress', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error updating progress: ' + error.message, 'danger');
+        });
+    }
 }
 </script>
 @endpush

@@ -109,6 +109,7 @@ Route::middleware('auth')->group(function () {
     // Projects Routes
     Route::resource('projects', ProjectController::class);
     Route::post('/projects/{project}/progress', [ProjectController::class, 'updateProgress'])->name('projects.progress.update');
+    Route::post('/projects/{project}/quick-progress', [ProjectController::class, 'quickUpdateProgress'])->name('projects.quick-progress.update');
     Route::post('/projects/{project}/mark-complete', [ProjectController::class, 'markComplete'])->name('projects.mark-complete');
     
     // Real-time project updates (web routes for better compatibility)

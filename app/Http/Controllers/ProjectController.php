@@ -405,14 +405,67 @@ class ProjectController extends Controller
             'progress' => 'required|integer|min:0|max:100',
         ]);
 
-        $project->update([
-            'progress' => $validated['progress']
-        ]);
+        $newProgress = $validated['progress'];
+        $updateData = ['progress' => $newProgress];
+
+        // Auto-complete project if progress reaches 100%
+        if ($newProgress >= 100) {
+            $updateData['status'] = 'completed';
+            $updateData['progress'] = 100;
+        }
+
+        $project->update($updateData);
 
         return response()->json([
             'success' => true,
             'message' => 'Project progress updated successfully!',
-            'progress' => $project->progress
+            'progress' => $project->progress,
+            'status' => $project->status,
+            'auto_completed' => $newProgress >= 100
+        ]);
+    }
+
+    /**
+     * Quick update project progress (for quick increment/decrement)
+     */
+    public function quickUpdateProgress(Request $request, Project $project)
+    {
+        $user = Auth::user();
+
+        // Check if user has access to this project
+        if ($user->isUser()) {
+            $hasAccess = $project->created_by === $user->id ||
+                        $project->teamMembers->contains($user->id);
+
+            if (!$hasAccess) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized action.'
+                ], 403);
+            }
+        }
+
+        $validated = $request->validate([
+            'increment' => 'required|integer|in:5,10,25',
+        ]);
+
+        $newProgress = min(100, $project->progress + $validated['increment']);
+        $updateData = ['progress' => $newProgress];
+
+        // Auto-complete project if progress reaches 100%
+        if ($newProgress >= 100) {
+            $updateData['status'] = 'completed';
+            $updateData['progress'] = 100;
+        }
+
+        $project->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Project progress updated successfully!',
+            'progress' => $project->progress,
+            'status' => $project->status,
+            'auto_completed' => $newProgress >= 100
         ]);
     }
 
