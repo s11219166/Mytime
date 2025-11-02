@@ -7,19 +7,19 @@
     <!-- Header Section -->
     <div class="row g-3 g-md-4 mb-4">
         <div class="col-12">
-            <div class="p-3 p-md-4 rounded-3" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-top: 4px solid #10b981;">
+            <div class="p-3 p-md-4 rounded-3" style="background: linear-gradient(135deg, #e9d5ff 0%, #ddd6fe 100%); border-top: 4px solid #7c3aed;">
                 <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-3" style="width:56px;height:56px;background:linear-gradient(135deg, #10b981 0%, #059669 100%);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.3);">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-3" style="width:56px;height:56px;background:linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);color:#fff;box-shadow:0 4px 12px rgba(124,58,237,.3);">
                             <i class="fas fa-plus"></i>
                         </div>
                         <div>
-                            <h1 class="h4 h-md-3 mb-1" style="color:#065f46 !important;">Create New Project</h1>
-                            <p class="mb-0" style="color:#047857;"><i class="fas fa-mobile-alt me-2"></i>Fill in the project details below</p>
+                            <h1 class="h4 h-md-3 mb-1" style="color:#5b21b6 !important;">Create New Project</h1>
+                            <p class="mb-0" style="color:#6d28d9;"><i class="fas fa-mobile-alt me-2"></i>Fill in the project details below</p>
                         </div>
                     </div>
                     <div class="d-flex gap-2 w-100 w-md-auto">
-                        <a href="{{ route('projects.index') }}" class="btn btn-outline-success w-100 w-md-auto">
+                        <a href="{{ route('projects.index') }}" class="btn btn-outline-primary w-100 w-md-auto">
                             <i class="fas fa-arrow-left me-2"></i>Back
                         </a>
                     </div>
@@ -33,7 +33,7 @@
         <div class="col-12 col-lg-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0">
-                    <h5 class="mb-0" style="color:#047857;"><i class="fas fa-info-circle me-2 text-success"></i>Project Details</h5>
+                    <h5 class="mb-0" style="color:#6d28d9;"><i class="fas fa-info-circle me-2" style="color:#7c3aed;"></i>Project Details</h5>
                 </div>
                 <div class="card-body">
                     @if ($errors->any())
@@ -86,9 +86,9 @@
                                 @enderror
                             </div>
                             <div class="col-12 col-md-6">
-                                <label for="end_date" class="form-label fw-semibold">Due Date <span class="text-muted">(Optional)</span></label>
+                                <label for="end_date" class="form-label fw-semibold">Due Date <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control @error('end_date') is-invalid @enderror" 
-                                       id="end_date" name="end_date" value="{{ old('end_date') }}">
+                                       id="end_date" name="end_date" value="{{ old('end_date') }}" required>
                                 <div class="form-text">Must be after the start date</div>
                                 @error('end_date')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -183,7 +183,7 @@
                 <div class="card-body">
                     <ul class="mb-0 ps-3">
                         <li class="mb-2">Start date defaults to today</li>
-                        <li class="mb-2">Due date is optional but must be after start date</li>
+                        <li class="mb-2">Due date is required and must be after start date</li>
                         <li class="mb-2">Priority helps with project organization</li>
                         <li>You can add team members after creating the project</li>
                     </ul>
@@ -211,26 +211,30 @@
 @push('styles')
 <style>
 .card { 
-    border-top: 3px solid #10b981; 
+    border-top: 3px solid #7c3aed; 
     border-radius: 1rem; 
 }
 .form-label { 
-    color: #065f46; 
+    color: #5b21b6; 
 }
 .form-control:focus, .form-select:focus { 
-    border-color: #10b981; 
-    box-shadow: 0 0 0 .2rem rgba(16,185,129,.15); 
+    border-color: #7c3aed; 
+    box-shadow: 0 0 0 .2rem rgba(124,58,237,.15); 
 }
 .btn-success { 
-    background-color: #10b981; 
-    border-color: #10b981; 
+    background-color: #7c3aed; 
+    border-color: #7c3aed; 
 }
-.btn-outline-success { 
-    border-color: #10b981; 
-    color: #047857; 
+.btn-success:hover { 
+    background-color: #6d28d9; 
+    border-color: #6d28d9; 
 }
-.btn-outline-success:hover { 
-    background: #10b981; 
+.btn-outline-primary { 
+    border-color: #7c3aed; 
+    color: #7c3aed; 
+}
+.btn-outline-primary:hover { 
+    background: #7c3aed; 
     color: #fff; 
 }
 
