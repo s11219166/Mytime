@@ -384,186 +384,6 @@
 
 @push('scripts')
 <script>
-// Real-time project updates
-let lastUpdateTimestamp = Math.floor(Date.now() / 1000);
-let updateCheckInterval = null;
-let isUpdating = false;
-
-function initializeRealTimeUpdates() {
-    // Check for updates every 3 seconds
-    updateCheckInterval = setInterval(checkForProjectUpdates, 3000);
-    
-    // Also check on page visibility change
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            // Page became visible, check for updates immediately
-            checkForProjectUpdates();
-        }
-    });
-}
-
-function checkForProjectUpdates() {
-    if (isUpdating) return;
-    
-    isUpdating = true;
-    
-    const params = new URLSearchParams({
-        status: document.querySelector('select[name="status"]')?.value || 'all',
-        search: document.querySelector('input[name="search"]')?.value || '',
-        last_update: lastUpdateTimestamp
-    });
-    
-    fetch(`/projects/api/updates?${params}`, {
-        headers: {
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success && data.projects) {
-            updateProjectsDisplay(data.projects);
-            lastUpdateTimestamp = data.timestamp;
-        }
-    })
-    .catch(error => console.error('Error checking for updates:', error))
-    .finally(() => {
-        isUpdating = false;
-    });
-    
-    // Also check for stats updates
-    checkForStatsUpdates();
-}
-
-function checkForStatsUpdates() {
-    const params = new URLSearchParams({
-        status: document.querySelector('select[name="status"]')?.value || 'all',
-    });
-    
-    fetch(`/projects/api/stats?${params}`, {
-        headers: {
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success && data.stats) {
-            updateStatsDisplay(data.stats);
-        }
-    })
-    .catch(error => console.error('Error checking stats:', error));
-}
-
-function updateProjectsDisplay(projects) {
-    // Get current projects from DOM
-    const currentProjectIds = Array.from(document.querySelectorAll('[data-project-id]'))
-        .map(el => parseInt(el.getAttribute('data-project-id')));
-    
-    const newProjectIds = projects.map(p => p.id);
-    
-    // Check if projects list has changed
-    const hasChanges = currentProjectIds.length !== newProjectIds.length ||
-                      !currentProjectIds.every(id => newProjectIds.includes(id)) ||
-                      !newProjectIds.every(id => currentProjectIds.includes(id));
-    
-    if (hasChanges) {
-        // Reload the page to show new/removed projects
-        location.reload();
-        return;
-    }
-    
-    // Update individual project rows
-    projects.forEach(project => {
-        const projectRow = document.querySelector(`[data-project-id="${project.id}"]`);
-        if (projectRow) {
-            updateProjectRow(projectRow, project);
-        }
-    });
-}
-
-function updateProjectRow(row, projectData) {
-    // Update status badge
-    const statusBadge = row.querySelector('[data-field="status"]');
-    if (statusBadge) {
-        const statusColors = {
-            'active': 'success',
-            'inprogress': 'primary',
-            'review_pending': 'warning',
-            'completed': 'success',
-            'cancelled': 'dark',
-        };
-        const color = statusColors[projectData.status] || 'secondary';
-        statusBadge.className = `badge bg-${color}`;
-        statusBadge.textContent = projectData.status.replace('_', ' ').charAt(0).toUpperCase() + projectData.status.replace('_', ' ').slice(1);
-    }
-    
-    // Update priority badge
-    const priorityBadge = row.querySelector('[data-field="priority"]');
-    if (priorityBadge) {
-        const priorityColors = {
-            'urgent': 'danger',
-            'high': 'warning',
-            'medium': 'info',
-            'low': 'secondary'
-        };
-        const color = priorityColors[projectData.priority] || 'secondary';
-        priorityBadge.className = `badge bg-${color}`;
-        priorityBadge.innerHTML = `<i class="fas fa-flag me-1"></i>${projectData.priority.charAt(0).toUpperCase() + projectData.priority.slice(1)}`;
-    }
-    
-    // Update progress bar
-    const progressBar = row.querySelector('[data-field="progress"]');
-    if (progressBar) {
-        const progressDiv = progressBar.querySelector('.progress-bar');
-        if (progressDiv) {
-            progressDiv.style.width = projectData.progress + '%';
-        }
-        const progressText = progressBar.querySelector('small');
-        if (progressText) {
-            progressText.textContent = projectData.progress + '%';
-        }
-    }
-    
-    // Update budget
-    const budgetCell = row.querySelector('[data-field="budget"]');
-    if (budgetCell && projectData.budget) {
-        budgetCell.innerHTML = `<span class="text-success fw-semibold">${parseFloat(projectData.budget).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`;
-    }
-}
-
-function updateStatsDisplay(stats) {
-    // Update total projects stat
-    const totalStat = document.querySelector('[data-stat="total"]');
-    if (totalStat) {
-        totalStat.textContent = stats.total;
-    }
-    
-    // Update active projects stat
-    const activeStat = document.querySelector('[data-stat="active"]');
-    if (activeStat) {
-        activeStat.textContent = stats.active;
-    }
-    
-    // Update pending projects stat
-    const pendingStat = document.querySelector('[data-stat="pending"]');
-    if (pendingStat) {
-        pendingStat.textContent = stats.pending;
-    }
-    
-    // Update completed projects stat
-    const completedStat = document.querySelector('[data-stat="completed"]');
-    if (completedStat) {
-        completedStat.textContent = stats.completed;
-    }
-    
-    // Update overdue projects stat (if admin)
-    const overdueStat = document.querySelector('[data-stat="overdue"]');
-    if (overdueStat && stats.overdue !== undefined) {
-        overdueStat.textContent = stats.overdue;
-    }
-}
-
 function deleteProject(projectId, projectName) {
     if (confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
         const deleteBtn = event.target.closest('button');
@@ -587,13 +407,12 @@ function deleteProject(projectId, projectName) {
             return response.json();
         })
         .then(data => {
-            console.log('Delete response:', data);
             if (data.success) {
                 showToast(data.message, 'success');
-                // Check for updates after 500ms to reflect deletion
+                // Reload page after 1 second to show updated list
                 setTimeout(() => {
-                    checkForProjectUpdates();
-                }, 500);
+                    location.reload();
+                }, 1000);
             } else {
                 showToast(data.message || 'Error deleting project', 'danger');
                 if (deleteBtn) {
@@ -624,17 +443,5 @@ function showToast(message, type = 'info') {
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 5000);
 }
-
-// Initialize real-time updates when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    initializeRealTimeUpdates();
-});
-
-// Clean up interval when page unloads
-window.addEventListener('beforeunload', function() {
-    if (updateCheckInterval) {
-        clearInterval(updateCheckInterval);
-    }
-});
 </script>
 @endpush
