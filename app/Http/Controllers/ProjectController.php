@@ -17,6 +17,11 @@ class ProjectController extends Controller
         // Clear any cached queries
         \Illuminate\Support\Facades\Cache::flush();
         
+        // Prevent browser caching
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        
         $user = Auth::user();
         
         // Use raw query to bypass any caching issues
@@ -191,7 +196,7 @@ class ProjectController extends Controller
             $project->teamMembers()->attach($teamData);
         }
 
-        return redirect()->route('projects.index')->with('success', 'Project created successfully!');
+        return redirect()->route('projects.index', ['t' => time()])->with('success', 'Project created successfully!');
     }
 
     /**
