@@ -36,9 +36,10 @@ class FinancialController extends Controller
             default => Carbon::now()->subDays(30)
         };
 
-        // Get transactions with filters
+        // Get transactions with filters (exclude soft deleted)
         $query = FinancialTransaction::with('category')
             ->forUser($user->id)
+            ->active()
             ->dateRange($startDate, $endDate)
             ->orderBy('transaction_date', 'desc');
 
@@ -309,8 +310,9 @@ class FinancialController extends Controller
         $savingsTrend = FinancialTransaction::getTrendPercentage($userId, 'savings', $startDate, $endDate);
         $bankDepositTrend = FinancialTransaction::getTrendPercentage($userId, 'bank_deposit', $startDate, $endDate);
 
-        // Calculate pending transactions
+        // Calculate pending transactions (exclude soft deleted)
         $pendingTransactions = FinancialTransaction::forUser($userId)
+            ->active()
             ->where('status', 'pending')
             ->dateRange($startDate, $endDate)
             ->get();

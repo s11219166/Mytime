@@ -284,18 +284,26 @@ class ProjectController extends Controller
                 \Illuminate\Support\Facades\Log::warning('Error detaching team members: ' . $e->getMessage());
             }
             
-            // Delete the project
-            $deleted = $project->delete();
+            // Delete the project using raw query to ensure deletion
+            $deleted = \Illuminate\Support\Facades\DB::table('projects')
+                ->where('id', $projectId)
+                ->delete();
             
             if (!$deleted) {
                 throw new \Exception('Failed to delete project from database');
             }
             
-            // Verify deletion
-            $stillExists = Project::find($projectId);
+            // Verify deletion with raw query
+            $stillExists = \Illuminate\Support\Facades\DB::table('projects')
+                ->where('id', $projectId)
+                ->first();
+            
             if ($stillExists) {
                 throw new \Exception('Project still exists after deletion attempt');
             }
+            
+            // Clear query cache
+            \Illuminate\Support\Facades\Cache::flush();
             
             \Illuminate\Support\Facades\Log::info('Successfully deleted project: ' . $projectId);
             

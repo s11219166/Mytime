@@ -301,14 +301,51 @@ Route::get('/admin/clear-projects', function() {
 
 // Clear cache and config (for fixing 419 errors)
 Route::get('/clear-cache', function() {
-    \Illuminate\Support\Facades\Artisan::call('cache:clear');
-    \Illuminate\Support\Facades\Artisan::call('config:clear');
-    \Illuminate\Support\Facades\Artisan::call('view:clear');
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Cache, config, and views cleared successfully.'
-    ]);
+    try {
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        \Illuminate\Support\Facades\Cache::flush();
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Cache, config, and views cleared successfully.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
 })->name('clear-cache');
+
+// Comprehensive cache and database cleanup
+Route::get('/cleanup-all', function() {
+    if (!Auth::check() || !Auth::user()->isAdmin()) {
+        return response()->json(['error' => 'Unauthorized'], 403);
+    }
+    
+    try {
+        // Clear all caches
+        \Illuminate\Support\Facades\Cache::flush();
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        
+        // Clear query cache
+        \Illuminate\Support\Facades\DB::statement('PRAGMA optimize;');
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'All caches and database cleaned successfully.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+})->name('cleanup-all');
 
 // Fix 419 error - clear sessions table
 Route::get('/fix-419', function() {

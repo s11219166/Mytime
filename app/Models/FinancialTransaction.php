@@ -94,6 +94,14 @@ class FinancialTransaction extends Model
     }
 
     /**
+     * Scope to exclude soft deleted records (active records only)
+     */
+    public function scopeActive($query)
+    {
+        return $query->whereNull('deleted_at');
+    }
+
+    /**
      * Get total amount for a specific type
      */
     public static function getTotalByType($userId, $type, $startDate = null, $endDate = null)
