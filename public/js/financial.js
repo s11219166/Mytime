@@ -92,7 +92,13 @@ function financialDashboard() {
             this.showModal = true;
 
             try {
-                const response = await fetch(`/financial/transaction/${id}`);
+                const response = await fetch(`/financial/transaction/${id}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
                 const data = await response.json();
 
                 if (data.success) {
@@ -146,6 +152,14 @@ function financialDashboard() {
 
             const method = this.editMode ? 'PUT' : 'POST';
 
+            // Prepare data for submission
+            const submitData = { ...this.formData };
+
+            // Remove the 'id' field for POST requests
+            if (!this.editMode && submitData.id) {
+                delete submitData.id;
+            }
+
             try {
                 const response = await fetch(url, {
                     method: method,
@@ -154,7 +168,7 @@ function financialDashboard() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify(this.formData)
+                    body: JSON.stringify(submitData)
                 });
 
                 const data = await response.json();

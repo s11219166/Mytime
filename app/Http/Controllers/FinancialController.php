@@ -67,6 +67,23 @@ class FinancialController extends Controller
     }
 
     /**
+     * Display the specified transaction
+     */
+    public function show(Request $request, $id)
+    {
+        $transaction = FinancialTransaction::forUser(Auth::id())->findOrFail($id);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'transaction' => $transaction->load('category')
+            ]);
+        }
+
+        return redirect()->route('financial.index');
+    }
+
+    /**
      * Store a new transaction
      */
     public function store(StoreFinancialTransactionRequest $request)

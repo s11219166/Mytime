@@ -130,6 +130,7 @@ Route::middleware('auth')->group(function () {
 
     // Financial Management Routes
     Route::get('/financial', [FinancialController::class, 'index'])->name('financial.index');
+    Route::get('/financial/transaction/{id}', [FinancialController::class, 'show'])->name('financial.show');
     Route::post('/financial/transaction', [FinancialController::class, 'store'])->name('financial.store');
     Route::put('/financial/transaction/{id}', [FinancialController::class, 'update'])->name('financial.update');
     Route::delete('/financial/transaction/{id}', [FinancialController::class, 'destroy'])->name('financial.destroy');
