@@ -1,0 +1,49 @@
+/* Light Blue Admin Theme */
+:root{
+  --lg-bg:#E8F4FD; /* light blue-50 */
+  --lg-bg-2:#F0F8FF; /* aliceblue alt */
+  --lg-surface:#ffffff;
+  --lg-primary:#3BAFDA; /* sky-500 */
+  --lg-primary-600:#2F86C0; /* darker for hover */
+  --lg-primary-700:#256EA6; /* darkest for active */
+  --lg-accent:#5EC2E6; /* sky-400 */
+  --lg-accent-2:#9BD9F0; /* sky-300 */
+  --lg-border:#B9E2F7; /* sky-200 */
+  --lg-muted:#0C4A6E; /* slate/blue muted */
+}
+
+body.admin-theme{
+  background: linear-gradient(135deg,var(--lg-bg) 0%, #f0f9ff 100%);
+}
+
+.admin-theme .navbar{
+  background: linear-gradient(90deg,#ffffff 0%, var(--lg-bg) 100%) !important;
+  border-bottom: 2px solid var(--lg-border);
+  box-shadow: 0 4px 12px rgba(59,175,218,.15);
+}
+
+.admin-theme .page-header h1{ color: var(--lg-primary-700); }
+.admin-theme .page-header p{ color: var(--lg-primary-600); }
+
+.admin-theme .card{
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(59,175,218,.1);
+  border-top: 3px solid var(--lg-primary);
+}
+
+.admin-theme .btn-primary{ background-color: var(--lg-primary); border-color: var(--lg-primary); }
+.admin-theme .btn-success{ background-color: var(--lg-accent); border-color: var(--lg-accent); color: #0C4A6E; }
+.admin-theme .btn-warning{ background-color: #93C5FD; border-color: #93C5FD; color: #1E3A8A; }
+.admin-theme .btn-info{ background-color: #38BDF8; border-color: #38BDF8; color: #075985; }
+
+.admin-theme .list-group-item{
+  border: 1px solid var(--lg-border) !important;
+}
+
+/* Sidebar overrides when using global layout */
+.admin-theme .sidebar{
+  background: linear-gradient(180deg, var(--lg-primary) 0%, var(--lg-primary-600) 50%, var(--lg-primary-700) 100%);
+}
+.admin-theme .sidebar-menu a.active{ color: #CFF0FF; border-right-color: var(--lg-accent); }
+.admin-theme .sidebar-menu a:hover i, .admin-theme .sidebar-menu a.active i{ color: var(--lg-accent); }

@@ -19,6 +19,9 @@ class FinancialController extends Controller
      */
     public function index(Request $request)
     {
+        // Clear cache to ensure fresh data
+        \Illuminate\Support\Facades\Cache::flush();
+        
         $user = Auth::user();
 
         // Get filter parameters
@@ -36,21 +39,28 @@ class FinancialController extends Controller
             default => Carbon::now()->subDays(30)
         };
 
-        // Get transactions with filters
-        $query = FinancialTransaction::with('category')
-            ->forUser($user->id)
-            ->dateRange($startDate, $endDate)
-            ->orderBy('transaction_date', 'desc');
+        // Use raw query to bypass any caching issues
+        $baseQuery = DB::table('financial_transactions')
+            ->where('user_id', $user->id)
+            ->whereNull('deleted_at')
+            ->whereBetween('transaction_date', [$startDate, $endDate]);
 
         if ($type) {
-            $query->ofType($type);
+            $baseQuery->where('type', $type);
         }
 
         if ($categoryId) {
-            $query->byCategory($categoryId);
+            $baseQuery->where('category_id', $categoryId);
         }
 
-        $transactions = $query->paginate(15);
+        // Get transaction IDs from raw query
+        $transactionIds = $baseQuery->pluck('id')->toArray();
+
+        // Now use Eloquent to load with relationships
+        $transactions = FinancialTransaction::with('category')
+            ->whereIn('id', $transactionIds)
+            ->orderBy('transaction_date', 'desc')
+            ->paginate(15);
 
         // Get categories for user
         $categories = FinancialCategory::forUser($user->id)->get();
@@ -67,20 +77,18 @@ class FinancialController extends Controller
     }
 
     /**
-     * Display the specified transaction
+     * Get a single transaction for editing
      */
-    public function show(Request $request, $id)
+    public function show($id)
     {
-        $transaction = FinancialTransaction::forUser(Auth::id())->findOrFail($id);
+        $transaction = FinancialTransaction::with('category')
+            ->forUser(Auth::id())
+            ->findOrFail($id);
 
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'transaction' => $transaction->load('category')
-            ]);
-        }
-
-        return redirect()->route('financial.index');
+        return response()->json([
+            'success' => true,
+            'transaction' => $transaction
+        ]);
     }
 
     /**
@@ -311,8 +319,9 @@ class FinancialController extends Controller
         $savingsTrend = FinancialTransaction::getTrendPercentage($userId, 'savings', $startDate, $endDate);
         $bankDepositTrend = FinancialTransaction::getTrendPercentage($userId, 'bank_deposit', $startDate, $endDate);
 
-        // Calculate pending transactions
+        // Calculate pending transactions (exclude soft deleted)
         $pendingTransactions = FinancialTransaction::forUser($userId)
+            ->active()
             ->where('status', 'pending')
             ->dateRange($startDate, $endDate)
             ->get();

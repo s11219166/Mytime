@@ -33,7 +33,11 @@ function financialDashboard() {
             income_trend: 0,
             expense_trend: 0,
             savings_trend: 0,
-            bank_deposit_trend: 0
+            bank_deposit_trend: 0,
+            pending_count: 0,
+            pending_total: 0,
+            pending_income: 0,
+            pending_expense: 0
         },
 
         // Charts
@@ -50,10 +54,10 @@ function financialDashboard() {
 
         // Initialize
         init() {
-            // Load categories from the page
             this.loadCategories();
             this.loadSummary();
             this.initCharts();
+            this.restorePrivacyPreference();
 
             // Auto-focus on first field when modal opens
             this.$watch('showModal', (value) => {
@@ -67,9 +71,16 @@ function financialDashboard() {
 
         // Load categories from page data
         loadCategories() {
-            // Get categories from the data attribute or window object
             if (window.financialCategories) {
                 this.allCategories = window.financialCategories;
+            }
+        },
+
+        // Restore privacy preference
+        restorePrivacyPreference() {
+            const saved = localStorage.getItem('hideAmounts');
+            if (saved !== null) {
+                this.hideAmounts = saved === 'true';
             }
         },
 
@@ -102,9 +113,16 @@ function financialDashboard() {
                 const data = await response.json();
 
                 if (data.success) {
+                    let formattedDate = data.transaction.transaction_date;
+                    if (formattedDate && formattedDate.includes('T')) {
+                        formattedDate = formattedDate.split('T')[0];
+                    } else if (formattedDate && formattedDate.includes(' ')) {
+                        formattedDate = formattedDate.split(' ')[0];
+                    }
+
                     this.formData = {
                         id: data.transaction.id,
-                        transaction_date: data.transaction.transaction_date,
+                        transaction_date: formattedDate,
                         type: data.transaction.type,
                         category_id: data.transaction.category_id,
                         amount: data.transaction.amount,
@@ -112,6 +130,8 @@ function financialDashboard() {
                         status: data.transaction.status,
                         reference_number: data.transaction.reference_number || ''
                     };
+
+                    this.filterCategoriesByType();
                 }
             } catch (error) {
                 console.error('Error loading transaction:', error);
@@ -140,7 +160,6 @@ function financialDashboard() {
 
         // Filter categories by type
         filterCategoriesByType() {
-            // Category filtering happens in the template with x-show
             this.formData.category_id = '';
         },
 
@@ -179,8 +198,6 @@ function financialDashboard() {
                         'success'
                     );
                     this.closeModal();
-
-                    // Reload page to show updated data
                     setTimeout(() => window.location.reload(), 500);
                 } else {
                     this.showNotification(data.message || 'An error occurred', 'error');
@@ -220,12 +237,19 @@ function financialDashboard() {
             }
         },
 
+        // Clear filters
+        clearFilters() {
+            this.dateRange = '30';
+            this.typeFilter = '';
+            this.categoryFilter = '';
+            this.fetchData();
+        },
+
         // Fetch data with filters
         async fetchData() {
             await this.loadSummary();
             this.updateCharts();
 
-            // Build URL with filters
             const params = new URLSearchParams({
                 date_range: this.dateRange
             });
@@ -238,7 +262,6 @@ function financialDashboard() {
                 params.append('category_id', this.categoryFilter);
             }
 
-            // Reload page with filters
             window.location.href = `/financial?${params.toString()}`;
         },
 
@@ -281,7 +304,8 @@ function financialDashboard() {
                             borderColor: 'rgb(34, 197, 94)',
                             backgroundColor: 'rgba(34, 197, 94, 0.1)',
                             tension: 0.4,
-                            fill: true
+                            fill: true,
+                            borderWidth: 2
                         },
                         {
                             label: 'Expenses',
@@ -289,7 +313,8 @@ function financialDashboard() {
                             borderColor: 'rgb(239, 68, 68)',
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             tension: 0.4,
-                            fill: true
+                            fill: true,
+                            borderWidth: 2
                         }
                     ]
                 },
@@ -299,10 +324,18 @@ function financialDashboard() {
                     plugins: {
                         legend: {
                             position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15
+                            }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 }
                         }
                     },
                     scales: {
@@ -312,6 +345,14 @@ function financialDashboard() {
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
                             }
                         }
                     }
@@ -334,7 +375,9 @@ function financialDashboard() {
                             '#ef4444', '#f97316', '#f59e0b', '#eab308',
                             '#84cc16', '#22c55e', '#10b981', '#14b8a6',
                             '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1'
-                        ]
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 2
                     }]
                 },
                 options: {
@@ -343,8 +386,16 @@ function financialDashboard() {
                     plugins: {
                         legend: {
                             position: 'right',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true
+                            }
                         },
                         tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 },
                             callbacks: {
                                 label: function(context) {
                                     const label = context.label || '';
@@ -381,7 +432,6 @@ function financialDashboard() {
         updateIncomeExpenseChart(dailyData) {
             if (!this.incomeExpenseChart) return;
 
-            // Group data by date
             const dateMap = new Map();
 
             dailyData.forEach(item => {
@@ -450,13 +500,22 @@ function financialDashboard() {
 
         // Show notification
         showNotification(message, type = 'success') {
-            // You can integrate with your existing notification system
-            // For now, using browser alert
-            if (type === 'success') {
-                alert('✓ ' + message);
-            } else {
-                alert('✗ ' + message);
-            }
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                <i class="fas ${icon} me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
         }
     };
 }

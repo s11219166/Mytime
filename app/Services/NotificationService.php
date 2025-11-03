@@ -11,6 +11,12 @@ use Illuminate\Support\Facades\Log;
 
 class NotificationService
 {
+    protected $pushNotificationService;
+
+    public function __construct(PushNotificationService $pushNotificationService)
+    {
+        $this->pushNotificationService = $pushNotificationService;
+    }
     /**
      * Create a notification for a user
      */
@@ -96,6 +102,16 @@ class NotificationService
             );
 
             Log::info("In-app notification created for user {$user->id}: {$title}");
+
+            // Send push notification if user has push notifications enabled
+            if ($user->push_notifications) {
+                try {
+                    $this->pushNotificationService->sendProjectDueNotification($user, $project, $daysRemaining);
+                    Log::info("Push notification sent to user {$user->id} for project {$project->name}");
+                } catch (\Exception $e) {
+                    Log::error("Failed to send push notification to user {$user->id}: " . $e->getMessage());
+                }
+            }
 
             // Send email if user has email notifications enabled
             if ($user->email_notifications) {

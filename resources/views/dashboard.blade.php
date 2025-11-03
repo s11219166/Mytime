@@ -92,7 +92,7 @@
             </div>
 
             <div class="row">
-                <div class="col-md-4 mb-4">
+            <div class="col-md-3 mb-4">
                     <div class="card h-100 border-primary">
                         <div class="card-body text-center">
                             <div class="display-4 text-primary mb-3">
@@ -105,7 +105,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-info">
                         <div class="card-body text-center">
                             <div class="display-4 text-info mb-3">
@@ -118,7 +118,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-warning">
                         <div class="card-body text-center">
                             <div class="display-4 text-warning mb-3">
@@ -131,7 +131,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-secondary">
                         <div class="card-body text-center">
                             <div class="display-4 text-secondary mb-3">
@@ -139,12 +139,12 @@
                             </div>
                             <h5 class="card-title">Time Logs</h5>
                             <p class="card-text">Review your time entries and sessions</p>
-                            <a href="#" class="btn btn-secondary">View Time Logs</a>
+                            <a href="{{ route('time-logs.index') }}" class="btn btn-secondary">View Time Logs</a>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-danger">
                         <div class="card-body text-center">
                             <div class="display-4 text-danger mb-3">
@@ -153,6 +153,32 @@
                             <h5 class="card-title">Profile</h5>
                             <p class="card-text">Manage your account settings</p>
                             <a href="{{ route('profile') }}" class="btn btn-danger">View Profile</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100 border-success">
+                        <div class="card-body text-center">
+                            <div class="display-4 text-success mb-3">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <h5 class="card-title">Notifications</h5>
+                            <p class="card-text">View all your notifications</p>
+                            <a href="{{ route('notifications') }}" class="btn btn-success">View Notifications</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100 border-dark">
+                        <div class="card-body text-center">
+                            <div class="display-4 text-dark mb-3">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <h5 class="card-title">Inspiration</h5>
+                            <p class="card-text">Get inspired and motivated</p>
+                            <a href="{{ route('inspiration') }}" class="btn btn-dark">Get Inspired</a>
                         </div>
                     </div>
                 </div>
@@ -238,7 +264,7 @@
     <div class="row mt-4">
         <div class="col-12">
             <div class="row">
-                <div class="col-md-6 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-purple">
                         <div class="card-body text-center">
                             <div class="display-4 text-purple mb-3">
@@ -251,7 +277,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-orange">
                         <div class="card-body text-center">
                             <div class="display-4 text-orange mb-3">
@@ -264,7 +290,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-teal">
                         <div class="card-body text-center">
                             <div class="display-4 text-teal mb-3">
@@ -277,7 +303,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100 border-pink">
                         <div class="card-body text-center">
                             <div class="display-4 text-pink mb-3">
@@ -285,7 +311,7 @@
                             </div>
                             <h5 class="card-title">Settings</h5>
                             <p class="card-text">Configure your preferences</p>
-                            <a href="#" class="btn btn-pink">Open Settings</a>
+                            <a href="{{ route('profile') }}" class="btn btn-pink">Open Settings</a>
                         </div>
                     </div>
                 </div>
@@ -325,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update session timer
     const sessionTimer = document.getElementById('sessionTimer');
     const lastActivity = document.getElementById('lastActivity');
-    const startTime = new Date('{{ $currentSession->start_time }}').getTime();
+    const startTime = new Date('{{ $sessionStart ?? now() }}').getTime();
 
     function updateSessionTime() {
         const now = new Date().getTime();
@@ -345,218 +371,72 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setInterval(updateSessionTime, 1000);
 
-    // Handle note form submission
-    const noteForm = document.getElementById('noteForm');
-    noteForm.addEventListener('submit', async function(e) {
-    if (!taskDescription.value) {
-        alert('Please enter a task description');
-        return;
-    }
-
-    try {
-        const response = await fetch('/timer/start', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                task_description: taskDescription.value,
-                project_id: projectId.value || null
-            })
-        });
-
-        const data = await response.json();
-        currentEntryId = data.id;
-        startTime = new Date(data.start_time).getTime();
-        timerInterval = setInterval(updateTimer, 1000);
-        isRunning = true;
-
-        startBtn.disabled = true;
-        pauseBtn.disabled = false;
-        stopBtn.disabled = false;
-        taskDescription.disabled = true;
-        projectId.disabled = true;
-
-    } catch (error) {
-        console.error('Error starting timer:', error);
-        alert('Failed to start timer');
-    }
-}
-
-async function pauseTimer() {
-    if (!isRunning) return;
-
-    try {
-        await fetch('/timer/pause', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        });
-
-        clearInterval(timerInterval);
-        isRunning = false;
-
-        startBtn.disabled = false;
-        pauseBtn.disabled = true;
-        stopBtn.disabled = false;
-
-    } catch (error) {
-        console.error('Error pausing timer:', error);
-        alert('Failed to pause timer');
-    }
-}
-
-async function resumeTimer() {
-    try {
-        const response = await fetch('/timer/resume', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        });
-
-        const data = await response.json();
-        startTime = new Date(data.start_time).getTime();
-        timerInterval = setInterval(updateTimer, 1000);
-        isRunning = true;
-
-        startBtn.disabled = true;
-        pauseBtn.disabled = false;
-        stopBtn.disabled = false;
-
-    } catch (error) {
-        console.error('Error resuming timer:', error);
-        alert('Failed to resume timer');
-    }
-}
-
-async function stopTimer() {
-    try {
-        await fetch('/timer/stop', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        });
-
-        clearInterval(timerInterval);
-        isRunning = false;
-        elapsedTime = 0;
-        currentEntryId = null;
-        timerDisplay.textContent = '00:00:00';
-
-        startBtn.disabled = false;
-        pauseBtn.disabled = true;
-        stopBtn.disabled = true;
-        taskDescription.disabled = false;
-        projectId.disabled = false;
-        taskDescription.value = '';
-        projectId.value = '';
-
-        // Reload the page to update the summary and time entries
-        window.location.reload();
-
-    } catch (error) {
-        console.error('Error stopping timer:', error);
-        alert('Failed to stop timer');
-    }
-}
-
-startBtn.addEventListener('click', function() {
-    if (!isRunning) {
-        if (currentEntryId) {
-            resumeTimer();
-        } else {
-            startTimer();
-        }
-    }
-});
-
-pauseBtn.addEventListener('click', function() {
-    if (isRunning) {
-        pauseTimer();
-    }
-});
-
-stopBtn.addEventListener('click', function() {
-    if (confirm('Are you sure you want to stop the timer?')) {
-        stopTimer();
-    }
-});
-
-// Prevent form submission
-timerForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-});
-
-// Load upcoming projects
-function loadUpcomingProjects() {
-    fetch('/api/upcoming-projects')
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('upcomingProjects');
-            if (data.projects && data.projects.length > 0) {
-                container.innerHTML = data.projects.map(project => `
-                    <a href="/projects/${project.id}" class="list-group-item list-group-item-action">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1">${project.name}</h6>
-                                <small class="text-muted">${project.days_remaining} days remaining</small>
+    // Load upcoming projects
+    function loadUpcomingProjects() {
+        fetch('/api/upcoming-projects')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('upcomingProjects');
+                if (data.projects && data.projects.length > 0) {
+                    container.innerHTML = data.projects.map(project => `
+                        <a href="/projects/${project.id}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">${project.name}</h6>
+                                    <small class="text-muted">${project.days_remaining} days remaining</small>
+                                </div>
+                                <span class="badge ${project.days_remaining <= 1 ? 'bg-danger' : project.days_remaining <= 3 ? 'bg-warning' : 'bg-info'}">
+                                    ${project.days_remaining <= 0 ? 'OVERDUE' : project.days_remaining + 'd'}
+                                </span>
                             </div>
-                            <span class="badge ${project.days_remaining <= 1 ? 'bg-danger' : project.days_remaining <= 3 ? 'bg-warning' : 'bg-info'}">
-                                ${project.days_remaining <= 0 ? 'OVERDUE' : project.days_remaining + 'd'}
-                            </span>
-                        </div>
-                    </a>
-                `).join('');
-            } else {
-                container.innerHTML = '<div class="text-center p-3 text-muted"><i class="fas fa-check-circle"></i> No upcoming due projects</div>';
-            }
-        })
-        .catch(error => {
-            console.error('Error loading upcoming projects:', error);
-            document.getElementById('upcomingProjects').innerHTML = '<div class="text-center p-3 text-danger">Error loading projects</div>';
-        });
-}
+                        </a>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="text-center p-3 text-muted"><i class="fas fa-check-circle"></i> No upcoming due projects</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading upcoming projects:', error);
+                document.getElementById('upcomingProjects').innerHTML = '<div class="text-center p-3 text-danger">Error loading projects</div>';
+            });
+    }
 
-// Load recent notifications
-function loadRecentNotifications() {
-    fetch('/notifications/latest')
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('recentNotifications');
-            if (data.notifications && data.notifications.length > 0) {
-                container.innerHTML = data.notifications.map(notification => `
-                    <a href="${notification.project_id ? '/projects/' + notification.project_id : '/notifications'}" class="list-group-item list-group-item-action ${notification.is_read ? '' : 'list-group-item-light'}">
-                        <div class="d-flex align-items-start">
-                            <div class="notification-icon bg-${notification.color} text-white rounded-circle me-2" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
-                                <i class="fas ${notification.icon}"></i>
+    // Load recent notifications
+    function loadRecentNotifications() {
+        fetch('/notifications/latest')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('recentNotifications');
+                if (data.notifications && data.notifications.length > 0) {
+                    container.innerHTML = data.notifications.map(notification => `
+                        <a href="${notification.project_id ? '/projects/' + notification.project_id : '/notifications'}" class="list-group-item list-group-item-action ${notification.is_read ? '' : 'list-group-item-light'}">
+                            <div class="d-flex align-items-start">
+                                <div class="notification-icon bg-${notification.color || 'primary'} text-white rounded-circle me-2" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                                <i class="fas ${notification.icon || 'fa-bell'}"></i>
                             </div>
                             <div class="flex-grow-1">
                                 <h6 class="mb-1">${notification.title}</h6>
                                 <small class="text-muted">${notification.created_at}</small>
                             </div>
-                        </div>
-                    </a>
-                `).join('');
-            } else {
-                container.innerHTML = '<div class="text-center p-3 text-muted"><i class="fas fa-bell-slash"></i> No notifications</div>';
-            }
-        })
-        .catch(error => {
-            console.error('Error loading notifications:', error);
-            document.getElementById('recentNotifications').innerHTML = '<div class="text-center p-3 text-danger">Error loading notifications</div>';
-        });
-}
+                        </a>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="text-center p-3 text-muted"><i class="fas fa-bell-slash"></i> No notifications</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading notifications:', error);
+                document.getElementById('recentNotifications').innerHTML = '<div class="text-center p-3 text-danger">Error loading notifications</div>';
+            });
+    }
 
-// Load data on page load
-loadUpcomingProjects();
-loadRecentNotifications();
+    // Load data on page load
+    loadUpcomingProjects();
+    loadRecentNotifications();
 
-// Refresh every 60 seconds
-setInterval(loadUpcomingProjects, 60000);
-setInterval(loadRecentNotifications, 60000);
+    // Refresh every 60 seconds
+    setInterval(loadUpcomingProjects, 60000);
+    setInterval(loadRecentNotifications, 60000);
+});
 </script>
 @endpush

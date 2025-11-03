@@ -11,7 +11,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #E8F4FD 0%, #f0f9ff 100%);
+            min-height: 100vh;
         }
 
         .sidebar {
@@ -20,11 +21,28 @@
             left: 0;
             height: 100vh;
             width: 250px;
-            background: linear-gradient(135deg, #90EE90 0%, #32CD32 100%);
+            background: linear-gradient(180deg, #3BAFDA 0%, #2F86C0 50%, #256EA6 100%) !important;
             color: white;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             z-index: 1000;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 4px 0 20px rgba(59, 175, 218, 0.3) !important;
+            overflow-y: auto;
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #5EC2E6, #9BD9F0, #CFF0FF);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .sidebar.collapsed {
@@ -32,15 +50,34 @@
         }
 
         .sidebar-header {
-            padding: 1.5rem 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
             text-align: center;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            position: relative;
+        }
+
+        .sidebar-header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #5EC2E6, transparent);
         }
 
         .sidebar-header h3 {
             margin: 0;
-            font-size: 1.5rem;
-            font-weight: 300;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header i {
+            color: #CFF0FF;
+            margin-right: 0.5rem;
         }
 
         .sidebar.collapsed .sidebar-header h3 {
@@ -49,33 +86,75 @@
 
         .sidebar-menu {
             list-style: none;
-            padding: 0;
+            padding: 1rem 0;
             margin: 0;
         }
 
         .sidebar-menu li {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+
+        .sidebar-menu li:last-child {
+            border-bottom: none;
         }
 
         .sidebar-menu a {
             display: flex;
             align-items: center;
-            padding: 1rem;
-            color: rgba(255, 255, 255, 0.8);
+            padding: 1rem 1.2rem;
+            color: rgba(255, 255, 255, 0.85);
             text-decoration: none;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
         }
 
-        .sidebar-menu a:hover,
-        .sidebar-menu a.active {
-            background-color: rgba(255, 255, 255, 0.1);
+        .sidebar-menu a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #5EC2E6, #9BD9F0);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-menu a:hover {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
             color: white;
+            padding-left: 1.5rem;
+        }
+
+        .sidebar-menu a:hover::before {
+            transform: scaleY(1);
+        }
+
+        .sidebar-menu a.active {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
+            color: #CFF0FF !important;
+            font-weight: 600;
+            border-right: 3px solid #5EC2E6 !important;
+        }
+
+        .sidebar-menu a.active::before {
+            transform: scaleY(1);
         }
 
         .sidebar-menu i {
-            width: 20px;
+            width: 24px;
             margin-right: 1rem;
             text-align: center;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu a:hover i,
+        .sidebar-menu a.active i {
+            color: #5EC2E6 !important;
+            transform: scale(1.15);
         }
 
         .sidebar.collapsed .sidebar-menu span {
@@ -84,7 +163,7 @@
 
         .main-content {
             margin-left: 250px;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             min-height: 100vh;
         }
 
@@ -93,28 +172,54 @@
         }
 
         .navbar {
-            background: white !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(90deg, #ffffff 0%, #E8F4FD 100%) !important;
+            box-shadow: 0 4px 12px rgba(59, 175, 218, 0.15);
             border: none;
+            border-bottom: 2px solid #B9E2F7;
+            position: relative;
+        }
+
+        .navbar::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3BAFDA, transparent);
         }
 
         .toggle-sidebar {
-            background: none;
+            background: linear-gradient(135deg, #D7EEFB 0%, #9BD9F0 100%);
             border: none;
-            color: #6c757d;
-            font-size: 1.2rem;
-            padding: 0.5rem;
+            color: #256EA6;
+            font-size: 1.3rem;
+            padding: 0.6rem 0.8rem;
             margin-right: 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(59, 175, 218, 0.2);
+        }
+
+        .toggle-sidebar:hover {
+            background: linear-gradient(135deg, #9BD9F0 0%, #5EC2E6 100%);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(59, 175, 218, 0.3);
         }
 
         .user-badge {
-            background: linear-gradient(135deg, #90EE90 0%, #32CD32 100%);
+            background: linear-gradient(135deg, #3BAFDA 0%, #2F86C0 100%);
             color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(59, 175, 218, 0.3);
         }
 
         .admin-badge {
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
         }
 
         .content-wrapper {
@@ -126,59 +231,79 @@
         }
 
         .page-header h1 {
-            color: #495057;
-            font-weight: 300;
+            color: #256EA6;
+            font-weight: 700;
             margin-bottom: 0.5rem;
+            font-size: 2rem;
         }
 
         .page-header p {
-            color: #6c757d;
+            color: #2F86C0;
             margin: 0;
+            font-weight: 500;
         }
 
         .card {
             border: none;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s;
+            box-shadow: 0 5px 15px rgba(59, 175, 218, 0.1);
+            transition: all 0.3s ease;
+            border-top: 3px solid #3BAFDA;
         }
 
         .card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(59, 175, 218, 0.2);
         }
 
         .notification-badge {
             position: absolute;
             top: -5px;
             right: -5px;
-            background: #dc3545;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 0.7rem;
+            width: 24px;
+            height: 24px;
+            font-size: 0.75rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
         }
 
         .notification-item.unread {
-            background-color: #f0fff4;
+            background-color: #E8F4FD;
+            border-left: 4px solid #3BAFDA;
         }
 
         .notification-icon {
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: 1rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #D7EEFB 0%, #9BD9F0 100%);
+            color: #256EA6;
         }
 
         #notificationDropdownMenu {
-            width: 350px;
-            max-height: 400px;
+            width: 380px;
+            max-height: 450px;
             overflow-y: auto;
+            border: 1px solid #B9E2F7;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(59, 175, 218, 0.2);
+        }
+
+        #notificationDropdownMenu .dropdown-header {
+            background: linear-gradient(90deg, #3BAFDA 0%, #2F86C0 100%);
+            color: white;
+            font-weight: 700;
+            border-radius: 12px 12px 0 0;
         }
 
         @media (max-width: 768px) {
@@ -365,6 +490,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/push-notifications.js"></script>
     <script>
         // Sidebar toggle functionality
         const sidebar = document.getElementById('sidebar');
@@ -382,6 +508,29 @@
                 sidebar.classList.toggle('show');
             });
         }
+
+        // Force full page refresh on sidebar navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Get the href
+                    const href = this.getAttribute('href');
+                    
+                    // If it's a valid link (not #), do a full page reload
+                    if (href && href !== '#' && !href.startsWith('javascript:')) {
+                        // Add a small delay to show the click effect
+                        setTimeout(function() {
+                            // Force a hard refresh with cache busting
+                            window.location.href = href + (href.includes('?') ? '&' : '?') + 'refresh=' + Date.now();
+                        }, 100);
+                        
+                        // Prevent default navigation
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
 
         // Real-time notification functionality
         document.addEventListener('DOMContentLoaded', function() {

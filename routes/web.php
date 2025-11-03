@@ -37,8 +37,69 @@ Route::middleware('auth')->group(function () {
         if (!Auth::user()->isAdmin()) {
             return redirect('/dashboard');
         }
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+
+        // Build session metrics - only if table exists
+        $myTodaySessions = 0;
+        $myTotalSessions = 0;
+        $globalTodaySessions = 0;
+        $globalTotalSessions = 0;
+        $activeAdmins = 0;
+        $recentSessions = [];
+        $lastSession = null;
+        $avgDailySessions = 0;
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('admin_sessions')) {
+            try {
+                $userId = Auth::id();
+                $today = now()->toDateString();
+                $myTodaySessions = \App\Models\AdminSession::where('user_id', $userId)
+                    ->whereDate('created_at', $today)->count();
+                $myTotalSessions = \App\Models\AdminSession::where('user_id', $userId)->count();
+                $globalTodaySessions = \App\Models\AdminSession::whereDate('created_at', $today)->count();
+                $globalTotalSessions = \App\Models\AdminSession::count();
+                $activeAdmins = \App\Models\AdminSession::where('started_at', '>=', now()->subMinutes(30))
+                    ->distinct('user_id')->count('user_id');
+                $recentSessions = \App\Models\AdminSession::where('user_id', $userId)
+                    ->orderBy('created_at', 'desc')->limit(10)->get();
+                $lastSession = \App\Models\AdminSession::where('user_id', $userId)
+                    ->latest('created_at')->first();
+                $last7 = \App\Models\AdminSession::where('user_id', $userId)
+                    ->where('created_at', '>=', now()->subDays(7))->count();
+                $avgDailySessions = round($last7 / 7, 2);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('AdminSession query failed: ' . $e->getMessage());
+            }
+        }
+
+        return view('admin.dashboard', compact(
+            'myTodaySessions',
+            'myTotalSessions',
+            'globalTodaySessions',
+            'globalTotalSessions',
+            'activeAdmins',
+            'recentSessions',
+            'lastSession',
+            'avgDailySessions'
+        ));
+    })->middleware('admin')->name('admin.dashboard');
+
+    // Admin session heartbeat to update last activity (ended_at)
+    Route::post('/admin/session/heartbeat', function() {
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('admin_sessions')) {
+                $latest = \App\Models\AdminSession::where('user_id', Auth::id())
+                    ->whereNull('ended_at')
+                    ->latest('started_at')->first();
+                if ($latest) {
+                    $latest->update(['ended_at' => now()]);
+                }
+            }
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('AdminSession heartbeat failed: ' . $e->getMessage());
+            return response()->json(['success' => false], 500);
+        }
+    })->middleware('admin')->name('admin.session.heartbeat');
 
     // User Management Routes (Admin Only)
     Route::middleware('admin')->group(function () {
@@ -48,7 +109,12 @@ Route::middleware('auth')->group(function () {
     // Projects Routes
     Route::resource('projects', ProjectController::class);
     Route::post('/projects/{project}/progress', [ProjectController::class, 'updateProgress'])->name('projects.progress.update');
+    Route::post('/projects/{project}/quick-progress', [ProjectController::class, 'quickUpdateProgress'])->name('projects.quick-progress.update');
     Route::post('/projects/{project}/mark-complete', [ProjectController::class, 'markComplete'])->name('projects.mark-complete');
+    
+    // Real-time project updates (web routes for better compatibility)
+    Route::get('/projects/api/updates', [ProjectController::class, 'getUpdates'])->name('projects.api.updates');
+    Route::get('/projects/api/stats', [ProjectController::class, 'getStats'])->name('projects.api.stats');
 
     // Analytics Routes
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
@@ -175,6 +241,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/clear-read', [\App\Http\Controllers\NotificationController::class, 'clearRead'])->name('notifications.clear-read');
     Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'getUnreadCount']);
     Route::get('/notifications/latest', [\App\Http\Controllers\NotificationController::class, 'getLatest']);
+
+    // Push Notification Routes
+    Route::post('/push-notifications/subscribe', [\App\Http\Controllers\PushNotificationController::class, 'subscribe']);
+    Route::post('/push-notifications/unsubscribe', [\App\Http\Controllers\PushNotificationController::class, 'unsubscribe']);
+    Route::post('/push-notifications/toggle', [\App\Http\Controllers\PushNotificationController::class, 'toggle']);
+    Route::post('/push-notifications/test', [\App\Http\Controllers\PushNotificationController::class, 'test']);
+    Route::get('/push-notifications/status', [\App\Http\Controllers\PushNotificationController::class, 'status']);
 });
 
 // Test route to check database connection
@@ -210,3 +283,94 @@ Route::get('/test-transactions', function() {
         ], 500);
     }
 });
+
+// Clear all projects (admin only - for debugging)
+Route::get('/admin/clear-projects', function() {
+    if (!Auth::check() || !Auth::user()->isAdmin()) {
+        return response()->json(['error' => 'Unauthorized'], 403);
+    }
+    try {
+        $count = \App\Models\Project::count();
+        \App\Models\Project::truncate();
+        return response()->json([
+            'status' => 'success',
+            'message' => "Successfully deleted {$count} projects from the database."
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+})->name('admin.clear-projects');
+
+// Clear cache and config (for fixing 419 errors)
+Route::get('/clear-cache', function() {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        \Illuminate\Support\Facades\Cache::flush();
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Cache, config, and views cleared successfully.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+})->name('clear-cache');
+
+// Comprehensive cache and database cleanup
+Route::get('/cleanup-all', function() {
+    if (!Auth::check() || !Auth::user()->isAdmin()) {
+        return response()->json(['error' => 'Unauthorized'], 403);
+    }
+    
+    try {
+        // Clear all caches
+        \Illuminate\Support\Facades\Cache::flush();
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        
+        // Clear query cache
+        \Illuminate\Support\Facades\DB::statement('PRAGMA optimize;');
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'All caches and database cleaned successfully.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+})->name('cleanup-all');
+
+// Fix 419 error - clear sessions table
+Route::get('/fix-419', function() {
+    try {
+        if (\Illuminate\Support\Facades\Schema::hasTable('sessions')) {
+            \Illuminate\Support\Facades\DB::table('sessions')->truncate();
+        }
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Sessions cleared. Try logging in again.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+})->name('fix-419');
+
+// Include diagnostic routes
+require __DIR__ . '/diagnostic.php';

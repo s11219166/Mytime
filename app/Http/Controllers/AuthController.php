@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\AdminSession;
 
 class AuthController extends Controller
 {
@@ -38,6 +39,20 @@ class AuthController extends Controller
             
             $user = Auth::user();
             
+            // TODO: Record admin session on login - COMMENTED OUT FOR LATER IMPLEMENTATION
+            // Uncomment the code below when ready to implement admin session tracking
+            /*
+            if ($user->isAdmin()) {
+                AdminSession::create([
+                    'user_id' => $user->id,
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'path' => $request->path(),
+                    'started_at' => now(),
+                ]);
+            }
+            */
+            
             // Redirect based on user role
             if ($user->isAdmin()) {
                 return redirect()->intended('/admin/dashboard')->with('success', 'Welcome Admin!');
@@ -56,6 +71,20 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        $user = Auth::user();
+        
+        // TODO: Record admin session end on logout - COMMENTED OUT FOR LATER IMPLEMENTATION
+        // Uncomment the code below when ready to implement admin session tracking
+        /*
+        if ($user && $user->isAdmin()) {
+            AdminSession::where('user_id', $user->id)
+                ->whereNull('ended_at')
+                ->latest('started_at')
+                ->first()
+                ?->update(['ended_at' => now()]);
+        }
+        */
+        
         Auth::logout();
         
         $request->session()->invalidate();
