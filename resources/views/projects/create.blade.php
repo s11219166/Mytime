@@ -260,6 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const startDateInput = document.getElementById('start_date');
     const endDateInput = document.getElementById('end_date');
     const form = document.getElementById('projectForm');
+    let isSubmitting = false;
 
     // Set minimum end date when start date changes
     function updateEndDateMin() {
@@ -278,6 +279,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     startDateInput.addEventListener('change', updateEndDateMin);
     updateEndDateMin();
+
+    // Prevent duplicate form submissions
+    form.addEventListener('submit', function(e) {
+        if (isSubmitting) {
+            e.preventDefault();
+            return false;
+        }
+        isSubmitting = true;
+        
+        // Disable submit button to prevent multiple clicks
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Project...';
+        }
+    });
 
     // Auto-focus name field on desktop
     if (window.innerWidth > 768) {
