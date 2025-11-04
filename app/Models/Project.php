@@ -12,6 +12,8 @@ use App\Mail\ProjectDueReminderMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use App\Events\ProjectCreated;
+use App\Events\ProjectCompleted;
 
 class Project extends Model
 {
@@ -44,11 +46,15 @@ class Project extends Model
     protected static function booted()
     {
         static::created(function ($project) {
-            // Dispatch notification job instead of sending immediately
-            // This will make project creation faster
-            \Illuminate\Support\Facades\Artisan::queue('project:send-notification', [
-                'project_id' => $project->id
-            ]);
+            // Dispatch ProjectCreated event to trigger notifications
+            ProjectCreated::dispatch($project);
+        });
+
+        static::updated(function ($project) {
+            // If project status changed to completed, dispatch ProjectCompleted event
+            if ($project->isDirty('status') && $project->status === 'completed') {
+                ProjectCompleted::dispatch($project);
+            }
         });
     }
 

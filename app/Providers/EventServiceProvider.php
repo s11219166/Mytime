@@ -4,6 +4,12 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use App\Events\ProjectCreated;
+use App\Events\ProjectAssigned;
+use App\Events\ProjectCompleted;
+use App\Listeners\SendProjectCreatedNotification;
+use App\Listeners\SendProjectAssignedNotification;
+use App\Listeners\SendProjectCompletedNotification;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -13,9 +19,15 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        // Event::class => [
-        //     EventListener::class,
-        // ],
+        ProjectCreated::class => [
+            SendProjectCreatedNotification::class,
+        ],
+        ProjectAssigned::class => [
+            SendProjectAssignedNotification::class,
+        ],
+        ProjectCompleted::class => [
+            SendProjectCompletedNotification::class,
+        ],
     ];
 
     /**

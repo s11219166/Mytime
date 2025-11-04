@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Events\ProjectAssigned;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -192,6 +193,11 @@ class ProjectController extends Controller
                 $teamData[$userId] = [
                     'role' => $validated['team_roles'][$index] ?? 'member'
                 ];
+                // Dispatch ProjectAssigned event for each team member
+                $user = User::find($userId);
+                if ($user) {
+                    ProjectAssigned::dispatch($project, $user);
+                }
             }
             $project->teamMembers()->attach($teamData);
         }
