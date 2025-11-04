@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\User;
 use App\Events\ProjectAssigned;
+use App\Events\ProjectCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -201,6 +202,9 @@ class ProjectController extends Controller
             }
             $project->teamMembers()->attach($teamData);
         }
+
+        // Dispatch project created event to notify admins
+        ProjectCreated::dispatch($project);
 
         return redirect()->route('projects.index', ['t' => time()])->with('success', 'Project created successfully!');
     }
