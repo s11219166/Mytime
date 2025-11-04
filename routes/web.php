@@ -248,6 +248,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/push-notifications/toggle', [\App\Http\Controllers\PushNotificationController::class, 'toggle']);
     Route::post('/push-notifications/test', [\App\Http\Controllers\PushNotificationController::class, 'test']);
     Route::get('/push-notifications/status', [\App\Http\Controllers\PushNotificationController::class, 'status']);
+
+    // Manual Notification Triggers (for Render deployment - replaces cron jobs)
+    Route::post('/notifications/trigger/check-due-dates', [\App\Http\Controllers\NotificationTriggerController::class, 'checkDueDates'])->name('notifications.trigger.check-due-dates');
+    Route::post('/notifications/trigger/test', [\App\Http\Controllers\NotificationTriggerController::class, 'createTestNotifications'])->name('notifications.trigger.test');
+    Route::get('/notifications/stats', [\App\Http\Controllers\NotificationTriggerController::class, 'getStats'])->name('notifications.stats');
+    Route::post('/projects/{project}/trigger-notifications', [\App\Http\Controllers\NotificationTriggerController::class, 'triggerProjectNotifications'])->name('projects.trigger-notifications');
 });
 
 // Test route to check database connection

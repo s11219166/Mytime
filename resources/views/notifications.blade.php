@@ -22,6 +22,16 @@
                     <i class="fas fa-trash me-2"></i>Clear Read
                 </button>
             </form>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-cog me-2"></i>Tools
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" onclick="checkDueDates()"><i class="fas fa-calendar-check me-2"></i>Check Due Dates</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="createTestNotifications()"><i class="fas fa-flask me-2"></i>Create Test Notifications</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="getNotificationStats()"><i class="fas fa-chart-bar me-2"></i>View Stats</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
@@ -248,10 +258,100 @@ function markMultipleAsRead() {
     });
 }
 
+function checkDueDates() {
+    if (!confirm('This will check all projects for upcoming due dates and create notifications. Continue?')) {
+        return;
+    }
+
+    showToast('Checking due dates...', 'info');
+
+    fetch('{{ route('notifications.trigger.check-due-dates') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`Due date check completed! ${data.notifications_created} notifications created.`, 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showToast('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error checking due dates', 'danger');
+    });
+}
+
+function createTestNotifications() {
+    if (!confirm('This will create test notifications for debugging. Continue?')) {
+        return;
+    }
+
+    showToast('Creating test notifications...', 'info');
+
+    fetch('{{ route('notifications.trigger.test') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Test notifications created successfully!', 'success');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showToast('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error creating test notifications', 'danger');
+    });
+}
+
+function getNotificationStats() {
+    showToast('Loading notification stats...', 'info');
+
+    fetch('{{ route('notifications.stats') }}', {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const stats = data.stats;
+            const message = `
+                Total: ${stats.total_notifications} |
+                Unread: ${stats.unread_notifications} |
+                Today: ${stats.today_notifications} |
+                Projects: ${stats.projects_count} |
+                Upcoming: ${stats.upcoming_projects} |
+                Overdue: ${stats.overdue_projects}
+            `;
+            showToast(message, 'info');
+        } else {
+            showToast('Error loading stats', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error loading notification stats', 'danger');
+    });
+}
+
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 600px;';
     toast.innerHTML = `
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -261,7 +361,7 @@ function showToast(message, type = 'info') {
 
     setTimeout(() => {
         toast.remove();
-    }, 5000);
+    }, 8000); // Longer timeout for stats messages
 }
 </script>
 @endpush

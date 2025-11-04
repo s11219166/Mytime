@@ -8,9 +8,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
-class SendProjectAssignedNotification implements ShouldQueue
+// Temporarily disable queuing for Render deployment
+// class SendProjectAssignedNotification implements ShouldQueue
+class SendProjectAssignedNotification
 {
-    use InteractsWithQueue;
+    // use InteractsWithQueue;
 
     /**
      * Create the event listener.
