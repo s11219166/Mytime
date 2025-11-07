@@ -71,26 +71,6 @@
 
     <div class="row">
         <div class="col-lg-8 mb-4">
-            <div class="session-timer mb-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Current Session</h5>
-                    <span class="status-badge bg-light text-dark">
-                        <i class="fas fa-circle text-success me-1"></i>Active
-                    </span>
-                </div>
-                <div class="session-time" id="sessionTimer">{{ $sessionTime ?? '00:00:00' }}</div>
-                <div class="row text-center">
-                    <div class="col">
-                        <h5 class="mb-1">Session Start</h5>
-                        <p class="mb-0">{{ $sessionStart ?? now()->format('h:i A') }}</p>
-                    </div>
-                    <div class="col">
-                        <h5 class="mb-1">Last Activity</h5>
-                        <p class="mb-0" id="lastActivity">Just now</p>
-                    </div>
-                </div>
-            </div>
-
             <div class="row">
             <div class="col-md-3 mb-4">
                     <div class="card h-100 border-primary">

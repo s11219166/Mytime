@@ -3,17 +3,22 @@ function financialDashboard() {
     return {
         // State
         showModal: false,
+        showQuickAddModal: false,
         editMode: false,
         hideAmounts: false,
         dateRange: '30',
         typeFilter: '',
         categoryFilter: '',
+        isSubmitting: false,
+        searchQuery: '',
+        sortBy: 'date_desc',
 
         // Categories data
         allCategories: [],
 
         // Form data
         formData: {
+            id: null,
             transaction_date: new Date().toISOString().split('T')[0],
             type: '',
             category_id: '',
@@ -21,6 +26,14 @@ function financialDashboard() {
             description: '',
             status: 'completed',
             reference_number: ''
+        },
+
+        // Quick add form
+        quickAddForm: {
+            amount: '',
+            type: 'expense',
+            category_id: '',
+            description: ''
         },
 
         // Summary data
@@ -52,6 +65,13 @@ function financialDashboard() {
             return this.allCategories.filter(cat => cat.type === this.formData.type);
         },
 
+        get quickAddFilteredCategories() {
+            if (!this.quickAddForm.type) {
+                return this.allCategories;
+            }
+            return this.allCategories.filter(cat => cat.type === this.quickAddForm.type);
+        },
+
         // Initialize
         init() {
             this.loadCategories();
@@ -62,9 +82,24 @@ function financialDashboard() {
             // Auto-focus on first field when modal opens
             this.$watch('showModal', (value) => {
                 if (value) {
+                    document.body.style.overflow = 'hidden';
                     setTimeout(() => {
                         this.$el.querySelector('input[type="date"]')?.focus();
                     }, 100);
+                } else {
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // Quick add modal
+            this.$watch('showQuickAddModal', (value) => {
+                if (value) {
+                    document.body.style.overflow = 'hidden';
+                    setTimeout(() => {
+                        this.$el.querySelector('[data-quick-add-amount]')?.focus();
+                    }, 100);
+                } else {
+                    document.body.style.overflow = 'auto';
                 }
             });
         },
@@ -95,6 +130,67 @@ function financialDashboard() {
             this.editMode = false;
             this.resetForm();
             this.showModal = true;
+        },
+
+        // Open quick add modal
+        openQuickAddModal() {
+            this.quickAddForm = {
+                amount: '',
+                type: 'expense',
+                category_id: '',
+                description: ''
+            };
+            this.showQuickAddModal = true;
+        },
+
+        // Close quick add modal
+        closeQuickAddModal() {
+            this.showQuickAddModal = false;
+        },
+
+        // Submit quick add
+        async submitQuickAdd() {
+            if (!this.quickAddForm.amount || !this.quickAddForm.type || !this.quickAddForm.category_id) {
+                this.showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            this.isSubmitting = true;
+
+            try {
+                const response = await fetch('/financial/transaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        transaction_date: new Date().toISOString().split('T')[0],
+                        type: this.quickAddForm.type,
+                        category_id: this.quickAddForm.category_id,
+                        amount: this.quickAddForm.amount,
+                        description: this.quickAddForm.description,
+                        status: 'completed',
+                        reference_number: ''
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    this.showNotification('Transaction added successfully', 'success');
+                    this.closeQuickAddModal();
+                    setTimeout(() => window.location.reload(), 500);
+                } else {
+                    this.showNotification(data.message || 'An error occurred', 'error');
+                    this.isSubmitting = false;
+                }
+            } catch (error) {
+                console.error('Error submitting transaction:', error);
+                this.showNotification('Failed to save transaction: ' + error.message, 'error');
+                this.isSubmitting = false;
+            }
         },
 
         // Open edit modal
@@ -165,6 +261,8 @@ function financialDashboard() {
 
         // Submit transaction
         async submitTransaction() {
+            this.isSubmitting = true;
+
             const url = this.editMode
                 ? `/financial/transaction/${this.formData.id}`
                 : '/financial/transaction';
@@ -192,7 +290,7 @@ function financialDashboard() {
 
                 const data = await response.json();
 
-                if (data.success) {
+                if (response.ok && data.success) {
                     this.showNotification(
                         this.editMode ? 'Transaction updated successfully' : 'Transaction created successfully',
                         'success'
@@ -201,10 +299,12 @@ function financialDashboard() {
                     setTimeout(() => window.location.reload(), 500);
                 } else {
                     this.showNotification(data.message || 'An error occurred', 'error');
+                    this.isSubmitting = false;
                 }
             } catch (error) {
                 console.error('Error submitting transaction:', error);
-                this.showNotification('Failed to save transaction', 'error');
+                this.showNotification('Failed to save transaction: ' + error.message, 'error');
+                this.isSubmitting = false;
             }
         },
 
@@ -242,6 +342,7 @@ function financialDashboard() {
             this.dateRange = '30';
             this.typeFilter = '';
             this.categoryFilter = '';
+            this.searchQuery = '';
             this.fetchData();
         },
 
@@ -502,7 +603,7 @@ function financialDashboard() {
         showNotification(message, type = 'success') {
             const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
             const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-            
+
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
             alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
@@ -510,9 +611,9 @@ function financialDashboard() {
                 <i class="fas ${icon} me-2"></i>${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
+
             document.body.appendChild(alertDiv);
-            
+
             setTimeout(() => {
                 alertDiv.remove();
             }, 5000);

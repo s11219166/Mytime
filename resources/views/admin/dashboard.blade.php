@@ -69,52 +69,48 @@
     </div>
 </div>
 
-<!-- Session Panel and Quick Actions -->
+<!-- Quick Admin Actions -->
 <div class="row mt-4 g-3">
     <div class="col-12 col-lg-8">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0"><i class="fas fa-stopwatch me-2"></i>Current Session</h5>
-                <span class="badge bg-success" id="heartbeatStatus">Live</span>
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-bolt me-2"></i>Quick Admin Actions</h5>
             </div>
             <div class="card-body">
-                <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
-                    <div>
-                        <div class="text-muted">Started</div>
-                        <div class="fs-5">{{ optional($lastSession?->started_at)->format('M d, Y h:i A') ?? '—' }}</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-muted">Duration</div>
-                        <div class="display-6" id="sessionTimer">00:00:00</div>
-                    </div>
-                    <div>
-                        <div class="text-muted">Last Activity</div>
-                        <div class="fs-5" id="lastActivity">—</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5 class="card-title mb-0"><i class="fas fa-history me-2"></i>Recent Sessions</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    @forelse(($recentSessions ?? []) as $s)
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fas fa-sign-in-alt text-success me-2"></i>
-                                <strong>{{ $s->started_at?->format('M d, Y h:i A') ?? $s->created_at->format('M d, Y h:i A') }}</strong>
-                                <small class="text-muted ms-2">IP: {{ $s->ip_address ?? 'N/A' }}</small>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <a href="{{ route('users.index') }}" class="card h-100 text-decoration-none text-dark border-success">
+                            <div class="card-body text-center">
+                                <div style="font-size: 2.5rem; color: #20c997; margin-bottom: 1rem;">
+                                    <i class="fas fa-users-cog"></i>
+                                </div>
+                                <h6 class="card-title">Manage Users</h6>
+                                <p class="card-text small text-muted">View and manage all users</p>
                             </div>
-                            <div class="text-end">
-                                <div class="small text-muted">Last: {{ $s->ended_at?->diffForHumans() ?? 'now' }}</div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{{ route('projects.index') }}" class="card h-100 text-decoration-none text-dark border-info">
+                            <div class="card-body text-center">
+                                <div style="font-size: 2.5rem; color: #0dcaf0; margin-bottom: 1rem;">
+                                    <i class="fas fa-project-diagram"></i>
+                                </div>
+                                <h6 class="card-title">View Projects</h6>
+                                <p class="card-text small text-muted">Monitor all projects</p>
                             </div>
-                        </div>
-                    @empty
-                        <div class="p-4 text-center text-muted">No session history yet.</div>
-                    @endforelse
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{{ route('analytics') }}" class="card h-100 text-decoration-none text-dark border-warning">
+                            <div class="card-body text-center">
+                                <div style="font-size: 2.5rem; color: #ffc107; margin-bottom: 1rem;">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h6 class="card-title">Analytics</h6>
+                                <p class="card-text small text-muted">View system analytics</p>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -123,24 +119,16 @@
     <div class="col-12 col-lg-4">
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title mb-0"><i class="fas fa-bolt me-2"></i>Quick Admin Actions</h5>
+                <h5 class="card-title mb-0"><i class="fas fa-chart-bar me-2"></i>System Stats</h5>
             </div>
             <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ route('users.index') }}" class="btn btn-success"><i class="fas fa-users-cog me-2"></i>Manage Users</a>
-                    <a href="{{ route('projects.index') }}" class="btn btn-outline-success"><i class="fas fa-project-diagram me-2"></i>View Projects</a>
-                    <a href="{{ route('analytics') }}" class="btn btn-outline-success"><i class="fas fa-chart-line me-2"></i>Analytics</a>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Avg Daily Sessions</span>
+                    <span class="badge bg-primary">{{ $avgDailySessions ?? 0 }}</span>
                 </div>
-                <hr>
-                <div>
-                    <div class="d-flex justify-content-between text-muted">
-                        <span>Avg Daily Sessions</span>
-                        <span>{{ $avgDailySessions ?? 0 }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between text-muted">
-                        <span>Total Sessions (All)</span>
-                        <span>{{ $globalTotalSessions ?? 0 }}</span>
-                    </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Total Sessions (All)</span>
+                    <span class="badge bg-success">{{ $globalTotalSessions ?? 0 }}</span>
                 </div>
             </div>
         </div>

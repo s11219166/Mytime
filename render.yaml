@@ -44,6 +44,8 @@ services:
           property: password
       - key: SESSION_DRIVER
         value: cookie
+      - key: SESSION_LIFETIME
+        value: "120"
       - key: SESSION_SECURE_COOKIE
         value: true
       - key: CACHE_STORE
