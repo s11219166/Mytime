@@ -261,6 +261,12 @@ function financialDashboard() {
 
         // Submit transaction
         async submitTransaction() {
+            // Validate required fields
+            if (!this.formData.transaction_date || !this.formData.type || !this.formData.category_id || !this.formData.amount) {
+                this.showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
             this.isSubmitting = true;
 
             const url = this.editMode
@@ -270,11 +276,19 @@ function financialDashboard() {
             const method = this.editMode ? 'PUT' : 'POST';
 
             // Prepare data for submission
-            const submitData = { ...this.formData };
+            const submitData = {
+                transaction_date: this.formData.transaction_date,
+                type: this.formData.type,
+                category_id: parseInt(this.formData.category_id),
+                amount: parseFloat(this.formData.amount),
+                description: this.formData.description || '',
+                status: this.formData.status,
+                reference_number: this.formData.reference_number || ''
+            };
 
-            // Remove the 'id' field for POST requests
-            if (!this.editMode && submitData.id) {
-                delete submitData.id;
+            // Add id for edit mode
+            if (this.editMode) {
+                submitData.id = this.formData.id;
             }
 
             try {
@@ -298,7 +312,13 @@ function financialDashboard() {
                     this.closeModal();
                     setTimeout(() => window.location.reload(), 500);
                 } else {
-                    this.showNotification(data.message || 'An error occurred', 'error');
+                    // Handle validation errors
+                    if (data.errors) {
+                        const errorMessages = Object.values(data.errors).flat().join(', ');
+                        this.showNotification(errorMessages, 'error');
+                    } else {
+                        this.showNotification(data.message || 'An error occurred', 'error');
+                    }
                     this.isSubmitting = false;
                 }
             } catch (error) {
