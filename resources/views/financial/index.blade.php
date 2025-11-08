@@ -369,19 +369,20 @@
 
     // Delete transaction
     function deleteTransaction(id) {
-        if (confirm('Are you sure you want to delete this transaction?')) {
-            fetch(`/financial/transaction/${id}`, {
+        if (confirm('Are you sure you want to delete this transaction?')) {            fetch(`/financial/transaction/${id}?t=${Date.now()}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate'
                 }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     alert('Transaction deleted successfully');
-                    location.reload();
+                    // Reload with cache busting
+                    window.location.href = window.location.pathname + '?t=' + Date.now();
                 } else {
                     alert('Error deleting transaction: ' + (data.message || 'Unknown error'));
                 }

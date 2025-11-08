@@ -332,7 +332,7 @@ class FinancialController extends Controller
         // Total amount = Income - Expenses for pending transactions
         $pendingTotal = $pendingIncome - $pendingExpense;
 
-        // Net balance = Income - Expenses - ANZ 10984661 (Savings) - ANZ Acc 13674771 (Bank Deposits)
+        // Net balance = Income - Expenses - ANZ Expense Bank 10984661 - ANZ Saving Account 13674771
         $netBalance = $income - $expense - $savings - $bankDeposit;
 
         return [
