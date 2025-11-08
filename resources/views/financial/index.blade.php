@@ -380,11 +380,11 @@
 
 <!-- Add/Edit Transaction Modal -->
 <div x-show="showModal" x-cloak x-transition class="modal" id="transactionModal" tabindex="-1" style="display: none;" :style="showModal && 'display: block;'">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0">
             <div class="modal-header bg-light border-0">
                 <h5 class="modal-title" x-text="editMode ? 'Edit Transaction' : 'Add New Transaction'"></h5>
-                <button type="button" class="btn-close" @click="closeModal()"></button>
+                <button type="button" class="btn-close" @click="closeModal()" :disabled="isSubmitting"></button>
             </div>
 
             <form @submit.prevent="submitTransaction()" class="modal-body">
