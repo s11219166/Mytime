@@ -9,25 +9,22 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // ===== REAL-TIME PROJECT CHECKS =====
-// Check project due dates and send notifications + emails EVERY HOUR (closest to 5 hours)
+// Check project due dates and send notifications + emails EVERY HOUR
 Schedule::command('projects:check-due-dates')
     ->hourly()
     ->name('realtime-project-check')
-    ->emailOutputOnFailure(config('mail.admin_email'))
     ->runInBackground();
 
 // ===== DAILY COMPREHENSIVE CHECKS =====
 // Morning comprehensive check at 9:00 AM
 Schedule::command('projects:check-due-dates')
     ->dailyAt('09:00')
-    ->name('morning-comprehensive-check')
-    ->emailOutputOnFailure(config('mail.admin_email'));
+    ->name('morning-comprehensive-check');
 
 // Evening reminder check at 6:00 PM
 Schedule::command('projects:check-due-dates')
     ->dailyAt('18:00')
-    ->name('evening-reminder-check')
-    ->emailOutputOnFailure(config('mail.admin_email'));
+    ->name('evening-reminder-check');
 
 // Test command for new project notifications
 Artisan::command('test:new-project-notification', function () {

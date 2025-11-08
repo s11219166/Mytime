@@ -3,7 +3,7 @@
 @section('title', 'Financial Management - MyTime')
 
 @section('content')
-<div class="container-fluid py-4" x-data="financialDashboard()">
+<div class="container-fluid py-4" x-data="financialDashboard()" x-init="console.log('Financial dashboard Alpine component initialized')">
     <!-- Header Section -->
     <div class="mb-4">
         <div class="row align-items-center">
@@ -379,7 +379,7 @@
 </div>
 
 <!-- Add/Edit Transaction Modal -->
-<div x-show="showModal" x-cloak class="modal" id="transactionModal" tabindex="-1" style="display: none;" :style="showModal && 'display: block;'">
+<div x-show="showModal" x-cloak x-transition class="modal" id="transactionModal" tabindex="-1" style="display: none;" :style="showModal && 'display: block;'">
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0">
             <div class="modal-header bg-light border-0">
@@ -504,7 +504,7 @@
 </div>
 
 <!-- Quick Add Transaction Modal (Mobile) -->
-<div x-show="showQuickAddModal" x-cloak class="modal" id="quickAddModal" tabindex="-1" style="display: none;" :style="showQuickAddModal && 'display: block;'">
+<div x-show="showQuickAddModal" x-cloak x-transition class="modal" id="quickAddModal" tabindex="-1" style="display: none;" :style="showQuickAddModal && 'display: block;'">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0">
             <div class="modal-header bg-light border-0">
@@ -595,14 +595,57 @@
 
 @push('scripts')
 <script>
+    // Initialize financial categories data
     window.financialCategories = @json($categories);
+    console.log('Financial categories loaded:', window.financialCategories);
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <script src="{{ asset('js/financial.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Financial dashboard initialized');
+        console.log('Financial dashboard page loaded');
+        console.log('Alpine.js version:', window.Alpine ? 'Loaded' : 'Not loaded');
     });
+
+    // Debug Alpine.js initialization
+    document.addEventListener('alpine:init', () => {
+        console.log('Alpine.js initialized successfully');
+    });
+
+    // Error handling for any JavaScript errors
+    window.addEventListener('error', function(e) {
+        console.error('JavaScript error:', e.error);
+        console.error('Error message:', e.message);
+        console.error('Error file:', e.filename);
+        console.error('Error line:', e.lineno);
+    });
+
+    // Fallback for manual modal opening if Alpine.js fails
+    window.openModalFallback = function() {
+        console.log('Fallback modal function called');
+        const modal = document.getElementById('transactionModal');
+        if (modal) {
+            modal.style.display = 'block';
+            modal.classList.add('show');
+        }
+    };
+
+    // Check if Alpine.js loaded properly after 3 seconds
+    setTimeout(() => {
+        if (!window.Alpine) {
+            console.error('Alpine.js failed to load! Financial page functionality may be limited.');
+            // Show a user-friendly message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-warning position-fixed';
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+            alertDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Page functionality is limited. Please refresh the page.
+                <button type="button" class="btn-close" onclick="this.parentNode.remove()"></button>
+            `;
+            document.body.appendChild(alertDiv);
+        }
+    }, 3000);
 </script>
 @endpush
 

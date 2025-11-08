@@ -59,105 +59,178 @@ function financialDashboard() {
 
         // Computed: Filtered categories based on selected type
         get filteredCategories() {
-            if (!this.formData.type) {
-                return this.allCategories;
+            try {
+                if (!this.formData.type) {
+                    return this.allCategories;
+                }
+                return this.allCategories.filter(cat => cat.type === this.formData.type);
+            } catch (error) {
+                console.error('Error filtering categories:', error);
+                return [];
             }
-            return this.allCategories.filter(cat => cat.type === this.formData.type);
         },
 
         get quickAddFilteredCategories() {
-            if (!this.quickAddForm.type) {
-                return this.allCategories;
+            try {
+                if (!this.quickAddForm.type) {
+                    return this.allCategories;
+                }
+                return this.allCategories.filter(cat => cat.type === this.quickAddForm.type);
+            } catch (error) {
+                console.error('Error filtering quick add categories:', error);
+                return [];
             }
-            return this.allCategories.filter(cat => cat.type === this.quickAddForm.type);
         },
 
         // Initialize
         init() {
-            this.loadCategories();
-            this.loadSummary();
-            this.initCharts();
-            this.restorePrivacyPreference();
+            try {
+                console.log('Initializing financial dashboard...');
+                this.loadCategories();
+                this.loadSummary();
+                this.restorePrivacyPreference();
 
-            // Auto-focus on first field when modal opens
-            this.$watch('showModal', (value) => {
-                if (value) {
-                    document.body.style.overflow = 'hidden';
-                    setTimeout(() => {
-                        this.$el.querySelector('input[type="date"]')?.focus();
-                    }, 100);
-                } else {
-                    document.body.style.overflow = 'auto';
-                }
-            });
+                // Initialize charts after a small delay to ensure DOM is ready
+                setTimeout(() => {
+                    try {
+                        this.initCharts();
+                    } catch (chartError) {
+                        console.error('Error initializing charts:', chartError);
+                    }
+                }, 100);
 
-            // Quick add modal
-            this.$watch('showQuickAddModal', (value) => {
-                if (value) {
-                    document.body.style.overflow = 'hidden';
-                    setTimeout(() => {
-                        this.$el.querySelector('[data-quick-add-amount]')?.focus();
-                    }, 100);
-                } else {
-                    document.body.style.overflow = 'auto';
-                }
-            });
+                // Auto-focus on first field when modal opens
+                this.$watch('showModal', (value) => {
+                    try {
+                        if (value) {
+                            document.body.style.overflow = 'hidden';
+                            setTimeout(() => {
+                                const dateInput = document.querySelector('input[type="date"]');
+                                if (dateInput) {
+                                    dateInput.focus();
+                                }
+                            }, 100);
+                        } else {
+                            document.body.style.overflow = 'auto';
+                        }
+                    } catch (error) {
+                        console.error('Error in modal watch:', error);
+                    }
+                });
+
+                // Quick add modal
+                this.$watch('showQuickAddModal', (value) => {
+                    try {
+                        if (value) {
+                            document.body.style.overflow = 'hidden';
+                            setTimeout(() => {
+                                const amountInput = document.querySelector('[data-quick-add-amount]');
+                                if (amountInput) {
+                                    amountInput.focus();
+                                }
+                            }, 100);
+                        } else {
+                            document.body.style.overflow = 'auto';
+                        }
+                    } catch (error) {
+                        console.error('Error in quick add modal watch:', error);
+                    }
+                });
+
+                console.log('Financial dashboard initialized successfully');
+            } catch (error) {
+                console.error('Error initializing financial dashboard:', error);
+                this.showNotification('Error initializing dashboard. Please refresh the page.', 'error');
+            }
         },
 
         // Load categories from page data
         loadCategories() {
-            if (window.financialCategories) {
-                this.allCategories = window.financialCategories;
+            try {
+                if (window.financialCategories) {
+                    this.allCategories = window.financialCategories;
+                    console.log('Categories loaded:', this.allCategories.length);
+                } else {
+                    console.warn('No financial categories found in window object');
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
             }
         },
 
         // Restore privacy preference
         restorePrivacyPreference() {
-            const saved = localStorage.getItem('hideAmounts');
-            if (saved !== null) {
-                this.hideAmounts = saved === 'true';
+            try {
+                const saved = localStorage.getItem('hideAmounts');
+                if (saved !== null) {
+                    this.hideAmounts = saved === 'true';
+                }
+            } catch (error) {
+                console.error('Error restoring privacy preference:', error);
             }
         },
 
         // Toggle privacy
         togglePrivacy() {
-            this.hideAmounts = !this.hideAmounts;
-            localStorage.setItem('hideAmounts', this.hideAmounts);
+            try {
+                this.hideAmounts = !this.hideAmounts;
+                localStorage.setItem('hideAmounts', this.hideAmounts);
+            } catch (error) {
+                console.error('Error toggling privacy:', error);
+            }
         },
 
         // Open add modal
         openAddModal() {
-            this.editMode = false;
-            this.resetForm();
-            this.showModal = true;
+            try {
+                console.log('Opening add modal...');
+                this.editMode = false;
+                this.resetForm();
+                this.showModal = true;
+            } catch (error) {
+                console.error('Error opening add modal:', error);
+                this.showNotification('Error opening form. Please try again.', 'error');
+            }
         },
 
         // Open quick add modal
         openQuickAddModal() {
-            this.quickAddForm = {
-                amount: '',
-                type: 'expense',
-                category_id: '',
-                description: ''
-            };
-            this.showQuickAddModal = true;
+            try {
+                console.log('Opening quick add modal...');
+                this.quickAddForm = {
+                    amount: '',
+                    type: 'expense',
+                    category_id: '',
+                    description: ''
+                };
+                this.showQuickAddModal = true;
+            } catch (error) {
+                console.error('Error opening quick add modal:', error);
+                this.showNotification('Error opening quick add form. Please try again.', 'error');
+            }
         },
 
         // Close quick add modal
         closeQuickAddModal() {
-            this.showQuickAddModal = false;
+            try {
+                this.showQuickAddModal = false;
+            } catch (error) {
+                console.error('Error closing quick add modal:', error);
+            }
         },
 
         // Submit quick add
         async submitQuickAdd() {
-            if (!this.quickAddForm.amount || !this.quickAddForm.type || !this.quickAddForm.category_id) {
-                this.showNotification('Please fill in all required fields', 'error');
-                return;
-            }
-
-            this.isSubmitting = true;
-
             try {
+                console.log('Submitting quick add...');
+
+                if (!this.quickAddForm.amount || !this.quickAddForm.type || !this.quickAddForm.category_id) {
+                    this.showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+
+                this.isSubmitting = true;
+
                 const response = await fetch('/financial/transaction', {
                     method: 'POST',
                     headers: {
@@ -187,7 +260,7 @@ function financialDashboard() {
                     this.isSubmitting = false;
                 }
             } catch (error) {
-                console.error('Error submitting transaction:', error);
+                console.error('Error submitting quick add:', error);
                 this.showNotification('Failed to save transaction: ' + error.message, 'error');
                 this.isSubmitting = false;
             }
@@ -195,10 +268,11 @@ function financialDashboard() {
 
         // Open edit modal
         async openEditModal(id) {
-            this.editMode = true;
-            this.showModal = true;
-
             try {
+                console.log('Opening edit modal for transaction:', id);
+                this.editMode = true;
+                this.showModal = true;
+
                 const response = await fetch(`/financial/transaction/${id}`, {
                     method: 'GET',
                     headers: {
@@ -237,61 +311,76 @@ function financialDashboard() {
 
         // Close modal
         closeModal() {
-            this.showModal = false;
-            setTimeout(() => this.resetForm(), 300);
+            try {
+                this.showModal = false;
+                setTimeout(() => this.resetForm(), 300);
+            } catch (error) {
+                console.error('Error closing modal:', error);
+            }
         },
 
         // Reset form
         resetForm() {
-            this.formData = {
-                transaction_date: new Date().toISOString().split('T')[0],
-                type: '',
-                category_id: '',
-                amount: '',
-                description: '',
-                status: 'completed',
-                reference_number: ''
-            };
+            try {
+                this.formData = {
+                    id: null,
+                    transaction_date: new Date().toISOString().split('T')[0],
+                    type: '',
+                    category_id: '',
+                    amount: '',
+                    description: '',
+                    status: 'completed',
+                    reference_number: ''
+                };
+            } catch (error) {
+                console.error('Error resetting form:', error);
+            }
         },
 
         // Filter categories by type
         filterCategoriesByType() {
-            this.formData.category_id = '';
+            try {
+                this.formData.category_id = '';
+            } catch (error) {
+                console.error('Error filtering categories by type:', error);
+            }
         },
 
         // Submit transaction
         async submitTransaction() {
-            // Validate required fields
-            if (!this.formData.transaction_date || !this.formData.type || !this.formData.category_id || !this.formData.amount) {
-                this.showNotification('Please fill in all required fields', 'error');
-                return;
-            }
-
-            this.isSubmitting = true;
-
-            const url = this.editMode
-                ? `/financial/transaction/${this.formData.id}`
-                : '/financial/transaction';
-
-            const method = this.editMode ? 'PUT' : 'POST';
-
-            // Prepare data for submission
-            const submitData = {
-                transaction_date: this.formData.transaction_date,
-                type: this.formData.type,
-                category_id: parseInt(this.formData.category_id),
-                amount: parseFloat(this.formData.amount),
-                description: this.formData.description || '',
-                status: this.formData.status,
-                reference_number: this.formData.reference_number || ''
-            };
-
-            // Add id for edit mode
-            if (this.editMode) {
-                submitData.id = this.formData.id;
-            }
-
             try {
+                console.log('Submitting transaction...');
+
+                // Validate required fields
+                if (!this.formData.transaction_date || !this.formData.type || !this.formData.category_id || !this.formData.amount) {
+                    this.showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+
+                this.isSubmitting = true;
+
+                const url = this.editMode
+                    ? `/financial/transaction/${this.formData.id}`
+                    : '/financial/transaction';
+
+                const method = this.editMode ? 'PUT' : 'POST';
+
+                // Prepare data for submission
+                const submitData = {
+                    transaction_date: this.formData.transaction_date,
+                    type: this.formData.type,
+                    category_id: parseInt(this.formData.category_id),
+                    amount: parseFloat(this.formData.amount),
+                    description: this.formData.description || '',
+                    status: this.formData.status,
+                    reference_number: this.formData.reference_number || ''
+                };
+
+                // Add id for edit mode
+                if (this.editMode) {
+                    submitData.id = this.formData.id;
+                }
+
                 const response = await fetch(url, {
                     method: method,
                     headers: {
@@ -330,11 +419,11 @@ function financialDashboard() {
 
         // Delete transaction
         async deleteTransaction(id) {
-            if (!confirm('Are you sure you want to delete this transaction?')) {
-                return;
-            }
-
             try {
+                if (!confirm('Are you sure you want to delete this transaction?')) {
+                    return;
+                }
+
                 const response = await fetch(`/financial/transaction/${id}`, {
                     method: 'DELETE',
                     headers: {
@@ -359,31 +448,39 @@ function financialDashboard() {
 
         // Clear filters
         clearFilters() {
-            this.dateRange = '30';
-            this.typeFilter = '';
-            this.categoryFilter = '';
-            this.searchQuery = '';
-            this.fetchData();
+            try {
+                this.dateRange = '30';
+                this.typeFilter = '';
+                this.categoryFilter = '';
+                this.searchQuery = '';
+                this.fetchData();
+            } catch (error) {
+                console.error('Error clearing filters:', error);
+            }
         },
 
         // Fetch data with filters
         async fetchData() {
-            await this.loadSummary();
-            this.updateCharts();
+            try {
+                await this.loadSummary();
+                this.updateCharts();
 
-            const params = new URLSearchParams({
-                date_range: this.dateRange
-            });
+                const params = new URLSearchParams({
+                    date_range: this.dateRange
+                });
 
-            if (this.typeFilter) {
-                params.append('type', this.typeFilter);
+                if (this.typeFilter) {
+                    params.append('type', this.typeFilter);
+                }
+
+                if (this.categoryFilter) {
+                    params.append('category_id', this.categoryFilter);
+                }
+
+                window.location.href = `/financial?${params.toString()}`;
+            } catch (error) {
+                console.error('Error fetching data:', error);
             }
-
-            if (this.categoryFilter) {
-                params.append('category_id', this.categoryFilter);
-            }
-
-            window.location.href = `/financial?${params.toString()}`;
         },
 
         // Load summary data
@@ -404,132 +501,144 @@ function financialDashboard() {
 
         // Initialize charts
         initCharts() {
-            this.initIncomeExpenseChart();
-            this.initExpenseCategoryChart();
-            this.loadChartData();
+            try {
+                this.initIncomeExpenseChart();
+                this.initExpenseCategoryChart();
+                this.loadChartData();
+            } catch (error) {
+                console.error('Error initializing charts:', error);
+            }
         },
 
         // Initialize income vs expense chart
         initIncomeExpenseChart() {
-            const ctx = document.getElementById('incomeExpenseChart');
-            if (!ctx) return;
+            try {
+                const ctx = document.getElementById('incomeExpenseChart');
+                if (!ctx) return;
 
-            this.incomeExpenseChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [
-                        {
-                            label: 'Income',
-                            data: [],
-                            borderColor: 'rgb(34, 197, 94)',
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                            tension: 0.4,
-                            fill: true,
-                            borderWidth: 2
-                        },
-                        {
-                            label: 'Expenses',
-                            data: [],
-                            borderColor: 'rgb(239, 68, 68)',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            tension: 0.4,
-                            fill: true,
-                            borderWidth: 2
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                padding: 15
+                this.incomeExpenseChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: 'Income',
+                                data: [],
+                                borderColor: 'rgb(34, 197, 94)',
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                borderWidth: 2
+                            },
+                            {
+                                label: 'Expenses',
+                                data: [],
+                                borderColor: 'rgb(239, 68, 68)',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                borderWidth: 2
                             }
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            padding: 12,
-                            titleFont: { size: 14 },
-                            bodyFont: { size: 13 }
-                        }
+                        ]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '$' + value.toLocaleString();
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15
                                 }
                             },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                titleFont: { size: 14 },
+                                bodyFont: { size: 13 }
                             }
                         },
-                        x: {
-                            grid: {
-                                display: false
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
+            } catch (error) {
+                console.error('Error initializing income expense chart:', error);
+            }
         },
 
         // Initialize expense category chart
         initExpenseCategoryChart() {
-            const ctx = document.getElementById('expenseCategoryChart');
-            if (!ctx) return;
+            try {
+                const ctx = document.getElementById('expenseCategoryChart');
+                if (!ctx) return;
 
-            this.expenseCategoryChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        data: [],
-                        backgroundColor: [
-                            '#ef4444', '#f97316', '#f59e0b', '#eab308',
-                            '#84cc16', '#22c55e', '#10b981', '#14b8a6',
-                            '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1'
-                        ],
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                padding: 15,
-                                usePointStyle: true
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            padding: 12,
-                            titleFont: { size: 14 },
-                            bodyFont: { size: 13 },
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = '$' + context.parsed.toLocaleString();
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                    return `${label}: ${value} (${percentage}%)`;
+                this.expenseCategoryChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            data: [],
+                            backgroundColor: [
+                                '#ef4444', '#f97316', '#f59e0b', '#eab308',
+                                '#84cc16', '#22c55e', '#10b981', '#14b8a6',
+                                '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1'
+                            ],
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    padding: 15,
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                titleFont: { size: 14 },
+                                bodyFont: { size: 13 },
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = '$' + context.parsed.toLocaleString();
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
+            } catch (error) {
+                console.error('Error initializing expense category chart:', error);
+            }
         },
 
         // Load chart data
@@ -551,92 +660,152 @@ function financialDashboard() {
 
         // Update income expense chart
         updateIncomeExpenseChart(dailyData) {
-            if (!this.incomeExpenseChart) return;
+            try {
+                if (!this.incomeExpenseChart) return;
 
-            const dateMap = new Map();
+                const dateMap = new Map();
 
-            dailyData.forEach(item => {
-                if (!dateMap.has(item.date)) {
-                    dateMap.set(item.date, { income: 0, expense: 0 });
-                }
+                dailyData.forEach(item => {
+                    if (!dateMap.has(item.date)) {
+                        dateMap.set(item.date, { income: 0, expense: 0 });
+                    }
 
-                if (item.type === 'income') {
-                    dateMap.get(item.date).income = parseFloat(item.total);
-                } else if (item.type === 'expense') {
-                    dateMap.get(item.date).expense = parseFloat(item.total);
-                }
-            });
+                    if (item.type === 'income') {
+                        dateMap.get(item.date).income = parseFloat(item.total);
+                    } else if (item.type === 'expense') {
+                        dateMap.get(item.date).expense = parseFloat(item.total);
+                    }
+                });
 
-            const sortedDates = Array.from(dateMap.keys()).sort();
-            const incomeData = sortedDates.map(date => dateMap.get(date).income);
-            const expenseData = sortedDates.map(date => dateMap.get(date).expense);
+                const sortedDates = Array.from(dateMap.keys()).sort();
+                const incomeData = sortedDates.map(date => dateMap.get(date).income);
+                const expenseData = sortedDates.map(date => dateMap.get(date).expense);
 
-            this.incomeExpenseChart.data.labels = sortedDates;
-            this.incomeExpenseChart.data.datasets[0].data = incomeData;
-            this.incomeExpenseChart.data.datasets[1].data = expenseData;
-            this.incomeExpenseChart.update();
+                this.incomeExpenseChart.data.labels = sortedDates;
+                this.incomeExpenseChart.data.datasets[0].data = incomeData;
+                this.incomeExpenseChart.data.datasets[1].data = expenseData;
+                this.incomeExpenseChart.update();
+            } catch (error) {
+                console.error('Error updating income expense chart:', error);
+            }
         },
 
         // Update expense category chart
         updateExpenseCategoryChart(expenseByCategory) {
-            if (!this.expenseCategoryChart) return;
+            try {
+                if (!this.expenseCategoryChart) return;
 
-            const labels = expenseByCategory.map(item => item.category.name);
-            const data = expenseByCategory.map(item => parseFloat(item.total));
+                const labels = expenseByCategory.map(item => item.category.name);
+                const data = expenseByCategory.map(item => parseFloat(item.total));
 
-            this.expenseCategoryChart.data.labels = labels;
-            this.expenseCategoryChart.data.datasets[0].data = data;
-            this.expenseCategoryChart.update();
+                this.expenseCategoryChart.data.labels = labels;
+                this.expenseCategoryChart.data.datasets[0].data = data;
+                this.expenseCategoryChart.update();
+            } catch (error) {
+                console.error('Error updating expense category chart:', error);
+            }
         },
 
         // Update charts
         updateCharts() {
-            this.loadChartData();
+            try {
+                this.loadChartData();
+            } catch (error) {
+                console.error('Error updating charts:', error);
+            }
         },
 
         // Export data
         exportData() {
-            const params = new URLSearchParams({
-                date_range: this.dateRange
-            });
+            try {
+                const params = new URLSearchParams({
+                    date_range: this.dateRange
+                });
 
-            if (this.typeFilter) {
-                params.append('type', this.typeFilter);
+                if (this.typeFilter) {
+                    params.append('type', this.typeFilter);
+                }
+
+                if (this.categoryFilter) {
+                    params.append('category_id', this.categoryFilter);
+                }
+
+                window.location.href = `/financial/export?${params.toString()}`;
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                this.showNotification('Error exporting data', 'error');
             }
-
-            if (this.categoryFilter) {
-                params.append('category_id', this.categoryFilter);
-            }
-
-            window.location.href = `/financial/export?${params.toString()}`;
         },
 
         // Format currency
         formatCurrency(amount) {
-            return '$' + parseFloat(amount || 0).toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
+            try {
+                return '$' + parseFloat(amount || 0).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            } catch (error) {
+                console.error('Error formatting currency:', error);
+                return '$0.00';
+            }
         },
 
-        // Show notification
+        // Show notification with improved error handling
         showNotification(message, type = 'success') {
-            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            try {
+                const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
 
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
-            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-            alertDiv.innerHTML = `
-                <i class="fas ${icon} me-2"></i>${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+                alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                alertDiv.innerHTML = `
+                    <i class="fas ${icon} me-2"></i>${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
 
-            document.body.appendChild(alertDiv);
+                document.body.appendChild(alertDiv);
 
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 5000);
+                // Auto-remove notification after 5 seconds
+                setTimeout(() => {
+                    try {
+                        if (alertDiv && alertDiv.parentNode) {
+                            alertDiv.remove();
+                        }
+                    } catch (removeError) {
+                        console.error('Error removing notification:', removeError);
+                    }
+                }, 5000);
+
+                // Also set up click handler for manual dismissal
+                const closeBtn = alertDiv.querySelector('.btn-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        try {
+                            if (alertDiv && alertDiv.parentNode) {
+                                alertDiv.remove();
+                            }
+                        } catch (closeError) {
+                            console.error('Error closing notification:', closeError);
+                        }
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error showing notification:', error);
+                // Fallback to alert if notification system fails
+                alert(message);
+            }
         }
     };
 }
+
+// Global error handler for any unhandled errors
+window.addEventListener('error', function(event) {
+    console.error('Global error:', event.error);
+});
+
+// Ensure DOM is loaded before Alpine.js runs
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, Alpine.js should initialize...');
+});
