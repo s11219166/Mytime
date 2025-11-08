@@ -23,6 +23,11 @@ class FinancialController extends Controller
         \Illuminate\Support\Facades\Cache::flush();
         
         $user = Auth::user();
+        
+        // Prevent caching on Render
+        header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Expires: 0');
 
         // Get filter parameters
         $dateRange = $request->input('date_range', '30');
@@ -112,7 +117,9 @@ class FinancialController extends Controller
                 'success' => true,
                 'message' => 'Transaction created successfully',
                 'transaction' => $transaction->load('category')
-            ]);
+            ])->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
+              ->header('Pragma', 'no-cache')
+              ->header('Expires', '0');
         }
 
         return redirect()->route('financial.index')
@@ -152,7 +159,9 @@ class FinancialController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Transaction deleted successfully'
-            ]);
+            ])->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
+              ->header('Pragma', 'no-cache')
+              ->header('Expires', '0');
         }
 
         return redirect()->route('financial.index')
