@@ -3,7 +3,7 @@
 @section('title', 'Financial Management - MyTime')
 
 @section('content')
-<div class="container-fluid py-4" x-data="financialDashboard()" x-init="console.log('Financial dashboard Alpine component initialized')">
+<div class="container-fluid py-4">
     <!-- Header Section -->
     <div class="mb-4">
         <div class="row align-items-center">
@@ -15,75 +15,14 @@
             </div>
             <div class="col-lg-6">
                 <div class="d-flex gap-2 justify-content-lg-end flex-wrap">
-                    <!-- Quick Add Button (Mobile Friendly) -->
-                    <button @click="openQuickAddModal()" class="btn btn-success btn-sm d-lg-none" title="Quick Add">
-                        <i class="fas fa-bolt me-2"></i>Quick Add
-                    </button>
-
-                    <!-- Privacy Toggle -->
-                    <button @click="togglePrivacy()" class="btn btn-outline-secondary btn-sm" title="Toggle Privacy">
-                        <i class="fas" :class="hideAmounts ? 'fa-eye-slash' : 'fa-eye'"></i>
-                        <span class="d-none d-sm-inline ms-1" x-text="hideAmounts ? 'Show' : 'Hide'"></span>
-                    </button>
-
                     <!-- Add Transaction Button -->
-                    <button @click="openAddModal()" class="btn btn-primary btn-sm d-none d-lg-inline-flex">
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
                         <i class="fas fa-plus me-2"></i>Add Transaction
                     </button>
 
                     <!-- Export Button -->
-                    <button @click="exportData()" class="btn btn-info btn-sm" title="Export CSV">
-                        <i class="fas fa-download"></i>
-                        <span class="d-none d-sm-inline ms-1">Export</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filters Section -->
-    <div class="card border-0 shadow-sm mb-4 filter-section">
-        <div class="card-body">
-            <div class="row g-2 g-md-3">
-                <!-- Date Range Filter -->
-                <div class="col-12 col-sm-6 col-md-3">
-                    <label class="filter-label">Date Range</label>
-                    <select x-model="dateRange" @change="fetchData()" class="form-select form-select-sm">
-                        <option value="7">Last 7 days</option>
-                        <option value="30" selected>Last 30 days</option>
-                        <option value="90">Last 3 months</option>
-                        <option value="365">Last year</option>
-                    </select>
-                </div>
-
-                <!-- Type Filter -->
-                <div class="col-12 col-sm-6 col-md-3">
-                    <label class="filter-label">Type</label>
-                    <select x-model="typeFilter" @change="fetchData()" class="form-select form-select-sm">
-                        <option value="">All Types</option>
-                        <option value="income">Income</option>
-                        <option value="expense">Expense</option>
-                        <option value="savings">Savings</option>
-                        <option value="bank_deposit">Bank Deposit</option>
-                    </select>
-                </div>
-
-                <!-- Category Filter -->
-                <div class="col-12 col-sm-6 col-md-3">
-                    <label class="filter-label">Category</label>
-                    <select x-model="categoryFilter" @change="fetchData()" class="form-select form-select-sm">
-                        <option value="">All Categories</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->icon }} {{ $category->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Clear Filters -->
-                <div class="col-12 col-sm-6 col-md-3">
-                    <label class="filter-label d-none d-md-block">&nbsp;</label>
-                    <button @click="clearFilters()" class="btn btn-outline-secondary btn-sm w-100">
-                        <i class="fas fa-redo me-2"></i><span class="d-none d-sm-inline">Reset</span>
+                    <button type="button" class="btn btn-info btn-sm" onclick="exportTransactions()">
+                        <i class="fas fa-download me-2"></i>Export
                     </button>
                 </div>
             </div>
@@ -94,18 +33,14 @@
     <div class="row g-3 mb-4">
         <!-- Income Card -->
         <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm summary-card h-100">
+            <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
-                        <div class="flex-grow-1">
+                        <div>
                             <p class="text-muted small mb-1">Total Income</p>
-                            <h4 class="mb-2" x-text="hideAmounts ? '••••' : formatCurrency(summary.income)"></h4>
-                            <small :class="summary.income_trend >= 0 ? 'text-success' : 'text-danger'" class="trend">
-                                <i :class="summary.income_trend >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
-                                <span x-text="Math.abs(summary.income_trend) + '% vs previous'"></span>
-                            </small>
+                            <h4 class="mb-0">${{ number_format($summary['income'], 2) }}</h4>
                         </div>
-                        <div class="summary-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.75rem;">
                             <i class="fas fa-arrow-up"></i>
                         </div>
                     </div>
@@ -115,18 +50,14 @@
 
         <!-- Expenses Card -->
         <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm summary-card h-100">
+            <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
-                        <div class="flex-grow-1">
+                        <div>
                             <p class="text-muted small mb-1">Total Expenses</p>
-                            <h4 class="mb-2" x-text="hideAmounts ? '••••' : formatCurrency(summary.expense)"></h4>
-                            <small :class="summary.expense_trend <= 0 ? 'text-success' : 'text-danger'" class="trend">
-                                <i :class="summary.expense_trend >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
-                                <span x-text="Math.abs(summary.expense_trend) + '% vs previous'"></span>
-                            </small>
+                            <h4 class="mb-0">${{ number_format($summary['expense'], 2) }}</h4>
                         </div>
-                        <div class="summary-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.75rem;">
                             <i class="fas fa-arrow-down"></i>
                         </div>
                     </div>
@@ -136,18 +67,14 @@
 
         <!-- Savings Card -->
         <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm summary-card h-100">
+            <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
-                        <div class="flex-grow-1">
-                            <p class="text-muted small mb-1">ANZ 10984661</p>
-                            <h4 class="mb-2" x-text="hideAmounts ? '••••' : formatCurrency(summary.savings)"></h4>
-                            <small :class="summary.savings_trend >= 0 ? 'text-success' : 'text-danger'" class="trend">
-                                <i :class="summary.savings_trend >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
-                                <span x-text="Math.abs(summary.savings_trend) + '% vs previous'"></span>
-                            </small>
+                        <div>
+                            <p class="text-muted small mb-1">Savings</p>
+                            <h4 class="mb-0">${{ number_format($summary['savings'], 2) }}</h4>
                         </div>
-                        <div class="summary-card-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.75rem;">
                             <i class="fas fa-piggy-bank"></i>
                         </div>
                     </div>
@@ -157,18 +84,14 @@
 
         <!-- Bank Deposits Card -->
         <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm summary-card h-100">
+            <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
-                        <div class="flex-grow-1">
-                            <p class="text-muted small mb-1">ANZ Acc 13674771</p>
-                            <h4 class="mb-2" x-text="hideAmounts ? '••••' : formatCurrency(summary.bank_deposit)"></h4>
-                            <small :class="summary.bank_deposit_trend >= 0 ? 'text-success' : 'text-danger'" class="trend">
-                                <i :class="summary.bank_deposit_trend >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
-                                <span x-text="Math.abs(summary.bank_deposit_trend) + '% vs previous'"></span>
-                            </small>
+                        <div>
+                            <p class="text-muted small mb-1">Bank Deposits</p>
+                            <h4 class="mb-0">${{ number_format($summary['bank_deposit'], 2) }}</h4>
                         </div>
-                        <div class="summary-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.75rem;">
                             <i class="fas fa-university"></i>
                         </div>
                     </div>
@@ -178,77 +101,17 @@
     </div>
 
     <!-- Net Balance Card -->
-    <div class="card border-0 shadow-sm mb-4" :class="summary.net_balance >= 0 ? 'border-start border-success' : 'border-start border-danger'" style="border-width: 4px;">
+    <div class="card border-0 shadow-sm mb-4" style="border-left: 4px solid {{ $summary['net_balance'] >= 0 ? '#22c55e' : '#ef4444' }};">
         <div class="card-body">
             <div class="row align-items-center">
-                <div class="col-lg-8 mb-3 mb-lg-0">
+                <div class="col-lg-8">
                     <p class="text-muted small mb-1">Net Balance</p>
-                    <small class="text-muted d-block mb-2">(Income - Expenses - ANZ 10984661 - ANZ Acc 13674771)</small>
-                    <h2 :class="summary.net_balance >= 0 ? 'text-success' : 'text-danger'" x-text="hideAmounts ? '••••' : formatCurrency(summary.net_balance)"></h2>
+                    <h2 class="{{ $summary['net_balance'] >= 0 ? 'text-success' : 'text-danger' }}">
+                        ${{ number_format($summary['net_balance'], 2) }}
+                    </h2>
                 </div>
                 <div class="col-lg-4 text-lg-end">
-                    <div style="font-size: 3rem;" x-text="summary.net_balance >= 0 ? '📈' : '📉'"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Pending Transactions Summary -->
-    @if($summary['pending_count'] > 0)
-    <div class="card border-0 shadow-sm mb-4" style="border-left: 4px solid #f59e0b;">
-        <div class="card-body">
-            <div class="d-flex align-items-center gap-2 mb-3">
-                <i class="fas fa-hourglass-half text-warning" style="font-size: 1.5rem;"></i>
-                <h5 class="mb-0">Pending Transactions</h5>
-            </div>
-            <div class="row g-3">
-                <div class="col-6 col-md-3">
-                    <small class="text-muted d-block">Count</small>
-                    <h5 class="mb-0" x-text="summary.pending_count"></h5>
-                </div>
-                <div class="col-6 col-md-3">
-                    <small class="text-muted d-block">Total Amount</small>
-                    <h5 class="mb-0" x-text="hideAmounts ? '••••' : formatCurrency(summary.pending_total)"></h5>
-                </div>
-                <div class="col-6 col-md-3">
-                    <small class="text-muted d-block">Income Pending</small>
-                    <h5 class="mb-0 text-success" x-text="hideAmounts ? '••••' : formatCurrency(summary.pending_income)"></h5>
-                </div>
-                <div class="col-6 col-md-3">
-                    <small class="text-muted d-block">Expense Pending</small>
-                    <h5 class="mb-0 text-danger" x-text="hideAmounts ? '••••' : formatCurrency(summary.pending_expense)"></h5>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    <!-- Charts Section -->
-    <div class="row g-4 mb-4">
-        <!-- Income vs Expense Chart -->
-        <div class="col-12 col-lg-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0">
-                    <h6 class="mb-0">Income vs Expenses Trend</h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="incomeExpenseChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Expense by Category Chart -->
-        <div class="col-12 col-lg-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0">
-                    <h6 class="mb-0">Expense Breakdown by Category</h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="expenseCategoryChart"></canvas>
-                    </div>
+                    <div style="font-size: 3rem;">{{ $summary['net_balance'] >= 0 ? '📈' : '📉' }}</div>
                 </div>
             </div>
         </div>
@@ -265,7 +128,7 @@
         <div class="card-body p-0">
             @if($transactions->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0 transaction-table">
+                    <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th class="small fw-bold">Date</th>
@@ -273,69 +136,59 @@
                                 <th class="small fw-bold d-none d-md-table-cell">Category</th>
                                 <th class="small fw-bold">Amount</th>
                                 <th class="small fw-bold d-none d-lg-table-cell">Status</th>
-                                <th class="small fw-bold d-none d-xl-table-cell">Description</th>
                                 <th class="small fw-bold text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($transactions as $transaction)
-                            <tr class="transaction-row">
+                            <tr>
                                 <td>
-                                    <div class="transaction-date">{{ $transaction->transaction_date->format('M d') }}</div>
-                                    <small class="transaction-date-day">{{ $transaction->transaction_date->format('l') }}</small>
+                                    <div class="fw-bold">{{ $transaction->transaction_date->format('M d') }}</div>
+                                    <small class="text-muted">{{ $transaction->transaction_date->format('l') }}</small>
                                 </td>
                                 <td>
-                                    @php
-                                        $typeColors = [
-                                            'income' => 'success',
-                                            'expense' => 'danger',
-                                            'savings' => 'info',
-                                            'bank_deposit' => 'warning'
-                                        ];
-                                    @endphp
-                                    <span class="type-badge {{ $transaction->type }}">
-                                        <i class="fas fa-{{ $transaction->type === 'income' ? 'arrow-up' : ($transaction->type === 'expense' ? 'arrow-down' : 'exchange-alt') }}"></i>
-                                        <span class="d-none d-sm-inline">{{ ucfirst(str_replace('_', ' ', $transaction->type)) }}</span>
+                                    <span class="badge" style="background-color: 
+                                        @if($transaction->type === 'income') #dcfce7; color: #166534;
+                                        @elseif($transaction->type === 'expense') #fee2e2; color: #991b1b;
+                                        @elseif($transaction->type === 'savings') #cffafe; color: #164e63;
+                                        @else #fce7f3; color: #831843;
+                                        @endif
+                                    ">
+                                        {{ ucfirst(str_replace('_', ' ', $transaction->type)) }}
                                     </span>
                                 </td>
                                 <td class="d-none d-md-table-cell">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span style="font-size: 1.25rem;">{{ $transaction->category->icon }}</span>
-                                        <span class="small d-none d-lg-inline">{{ $transaction->category->name }}</span>
-                                    </div>
+                                    <span style="font-size: 1.25rem;">{{ $transaction->category->icon }}</span>
+                                    <span class="small d-none d-lg-inline">{{ $transaction->category->name }}</span>
                                 </td>
                                 <td>
-                                    <div class="transaction-amount {{ $transaction->type }}">
-                                        <span x-show="!$root.hideAmounts">${{ number_format($transaction->amount, 2) }}</span>
-                                        <span x-show="$root.hideAmounts" class="text-muted">••••</span>
-                                    </div>
+                                    <span class="fw-bold" style="color: 
+                                        @if($transaction->type === 'income') #22c55e;
+                                        @elseif($transaction->type === 'expense') #ef4444;
+                                        @elseif($transaction->type === 'savings') #06b6d4;
+                                        @else #f59e0b;
+                                        @endif
+                                    ">
+                                        ${{ number_format($transaction->amount, 2) }}
+                                    </span>
                                 </td>
                                 <td class="d-none d-lg-table-cell">
-                                    @php
-                                        $statusColors = [
-                                            'completed' => 'success',
-                                            'pending' => 'warning',
-                                            'cancelled' => 'secondary'
-                                        ];
-                                    @endphp
-                                    <span class="status-badge {{ $transaction->status }}">
+                                    <span class="badge" style="background-color: 
+                                        @if($transaction->status === 'completed') #dcfce7; color: #166534;
+                                        @elseif($transaction->status === 'pending') #fef3c7; color: #92400e;
+                                        @else #fee2e2; color: #991b1b;
+                                        @endif
+                                    ">
                                         {{ ucfirst($transaction->status) }}
                                     </span>
                                 </td>
-                                <td class="d-none d-xl-table-cell">
-                                    <small class="text-muted text-truncate" style="max-width: 200px;" title="{{ $transaction->description }}">
-                                        {{ $transaction->description ?? '-' }}
-                                    </small>
-                                </td>
                                 <td class="text-end">
-                                    <div class="transaction-actions">
-                                        <button @click="openEditModal({{ $transaction->id }})" class="btn btn-sm btn-outline-primary" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button @click="deleteTransaction({{ $transaction->id }})" class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="editTransaction({{ $transaction->id }})" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteTransaction({{ $transaction->id }})" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </td>
                             </tr>
                             @endforeach
@@ -363,13 +216,11 @@
                 </div>
                 @endif
             @else
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="fas fa-inbox"></i>
-                    </div>
-                    <h5 class="empty-state-heading">No transactions found</h5>
-                    <p class="empty-state-text">Start by adding your first transaction</p>
-                    <button @click="openAddModal()" class="btn btn-primary btn-sm">
+                <div class="text-center p-5">
+                    <i class="fas fa-inbox" style="font-size: 3.5rem; color: #d1d5db;"></i>
+                    <h5 class="text-muted mt-3">No transactions found</h5>
+                    <p class="text-muted">Start by adding your first transaction</p>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
                         <i class="fas fa-plus me-2"></i>Add Transaction
                     </button>
                 </div>
@@ -379,35 +230,32 @@
 </div>
 
 <!-- Add/Edit Transaction Modal -->
-<div x-show="showModal" x-cloak x-transition class="modal" id="transactionModal" tabindex="-1" style="display: none;" :style="showModal && 'display: block;'">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+<div class="modal fade" id="addTransactionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0">
             <div class="modal-header bg-light border-0">
-                <h5 class="modal-title" x-text="editMode ? 'Edit Transaction' : 'Add New Transaction'"></h5>
-                <button type="button" class="btn-close" @click="closeModal()" :disabled="isSubmitting"></button>
+                <h5 class="modal-title">Add New Transaction</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
-            <form @submit.prevent="submitTransaction()" class="modal-body">
-                <div class="row g-4">
-                    <!-- Transaction Date -->
-                    <div class="col-12 col-md-6">
-                        <div class="form-group">
+            <form id="transactionForm" method="POST" action="{{ route('financial.store') }}">
+                @csrf
+                <div class="modal-body">
+                    <div class="row g-4">
+                        <!-- Transaction Date -->
+                        <div class="col-12 col-md-6">
                             <label class="form-label">
-                                <i class="fas fa-calendar-alt label-icon"></i>
-                                Date <span class="text-danger">*</span>
+                                <i class="fas fa-calendar-alt me-2 text-primary"></i>Date <span class="text-danger">*</span>
                             </label>
-                            <input type="date" x-model="formData.transaction_date" :max="new Date().toISOString().split('T')[0]" required class="form-control">
+                            <input type="date" name="transaction_date" class="form-control" required max="{{ date('Y-m-d') }}">
                         </div>
-                    </div>
 
-                    <!-- Type -->
-                    <div class="col-12 col-md-6">
-                        <div class="form-group">
+                        <!-- Type -->
+                        <div class="col-12 col-md-6">
                             <label class="form-label">
-                                <i class="fas fa-tag label-icon"></i>
-                                Type <span class="text-danger">*</span>
+                                <i class="fas fa-tag me-2 text-primary"></i>Type <span class="text-danger">*</span>
                             </label>
-                            <select x-model="formData.type" @change="filterCategoriesByType()" required class="form-select">
+                            <select name="type" class="form-select" required onchange="filterCategories()">
                                 <option value="">Select Type</option>
                                 <option value="income">💰 Income</option>
                                 <option value="expense">💸 Expense</option>
@@ -415,87 +263,66 @@
                                 <option value="bank_deposit">🏧 Bank Deposit</option>
                             </select>
                         </div>
-                    </div>
 
-                    <!-- Category -->
-                    <div class="col-12 col-md-6">
-                        <div class="form-group">
+                        <!-- Category -->
+                        <div class="col-12 col-md-6">
                             <label class="form-label">
-                                <i class="fas fa-list label-icon"></i>
-                                Category <span class="text-danger">*</span>
+                                <i class="fas fa-list me-2 text-primary"></i>Category <span class="text-danger">*</span>
                             </label>
-                            <select x-model.number="formData.category_id" required class="form-select">
+                            <select name="category_id" id="categorySelect" class="form-select" required>
                                 <option value="">Select Category</option>
-                                <template x-for="category in filteredCategories" :key="category.id">
-                                    <option :value="category.id" x-text="category.icon + ' ' + category.name"></option>
-                                </template>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}" data-type="{{ $category->type }}">
+                                        {{ $category->icon }} {{ $category->name }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
-                    </div>
 
-                    <!-- Amount -->
-                    <div class="col-12 col-md-6">
-                        <div class="form-group">
+                        <!-- Amount -->
+                        <div class="col-12 col-md-6">
                             <label class="form-label">
-                                <i class="fas fa-dollar-sign label-icon"></i>
-                                Amount <span class="text-danger">*</span>
+                                <i class="fas fa-dollar-sign me-2 text-primary"></i>Amount <span class="text-danger">*</span>
                             </label>
-                            <input type="number" x-model.number="formData.amount" step="0.01" min="0.01" required class="form-control" placeholder="0.00">
+                            <input type="number" name="amount" class="form-control" step="0.01" min="0.01" required placeholder="0.00">
                         </div>
-                    </div>
 
-                    <!-- Status -->
-                    <div class="col-12 col-md-6">
-                        <div class="form-group">
+                        <!-- Status -->
+                        <div class="col-12 col-md-6">
                             <label class="form-label">
-                                <i class="fas fa-check-circle label-icon"></i>
-                                Status <span class="text-danger">*</span>
+                                <i class="fas fa-check-circle me-2 text-primary"></i>Status <span class="text-danger">*</span>
                             </label>
-                            <select x-model="formData.status" required class="form-select">
+                            <select name="status" class="form-select" required>
                                 <option value="completed">✓ Completed</option>
                                 <option value="pending">⏳ Pending</option>
                                 <option value="cancelled">✕ Cancelled</option>
                             </select>
                         </div>
-                    </div>
 
-                    <!-- Reference Number -->
-                    <div class="col-12 col-md-6">
-                        <div class="form-group">
+                        <!-- Reference Number -->
+                        <div class="col-12 col-md-6">
                             <label class="form-label">
-                                <i class="fas fa-hashtag label-icon"></i>
-                                Reference Number
+                                <i class="fas fa-hashtag me-2 text-primary"></i>Reference Number
                             </label>
-                            <input type="text" x-model="formData.reference_number" class="form-control" placeholder="e.g., TXN-001">
+                            <input type="text" name="reference_number" class="form-control" placeholder="e.g., TXN-001">
                         </div>
-                    </div>
 
-                    <!-- Description -->
-                    <div class="col-12">
-                        <div class="form-group">
+                        <!-- Description -->
+                        <div class="col-12">
                             <label class="form-label">
-                                <i class="fas fa-sticky-note label-icon"></i>
-                                Description
+                                <i class="fas fa-sticky-note me-2 text-primary"></i>Description
                             </label>
-                            <textarea x-model="formData.description" rows="3" class="form-control" placeholder="Add any notes or details about this transaction..."></textarea>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Add any notes or details about this transaction..."></textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- Form Actions -->
-                <div class="modal-footer border-0 mt-4 pt-3" style="border-top: 1px solid var(--border-color);">
-                    <button type="button" @click="closeModal()" class="btn btn-outline-secondary" :disabled="isSubmitting">
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times me-2"></i>Cancel
                     </button>
-                    <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-                        <span x-show="!isSubmitting">
-                            <i :class="editMode ? 'fas fa-sync-alt' : 'fas fa-plus'" class="me-2"></i>
-                            <span x-text="editMode ? 'Update Transaction' : 'Add Transaction'"></span>
-                        </span>
-                        <span x-show="isSubmitting">
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            Saving...
-                        </span>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add Transaction
                     </button>
                 </div>
             </form>
@@ -503,157 +330,180 @@
     </div>
 </div>
 
-<!-- Quick Add Transaction Modal (Mobile) -->
-<div x-show="showQuickAddModal" x-cloak x-transition class="modal" id="quickAddModal" tabindex="-1" style="display: none;" :style="showQuickAddModal && 'display: block;'">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-header bg-light border-0">
-                <h5 class="modal-title">Quick Add Transaction</h5>
-                <button type="button" class="btn-close" @click="closeQuickAddModal()"></button>
-            </div>
-
-            <form @submit.prevent="submitQuickAdd()" class="modal-body">
-                <div class="row g-4">
-                    <!-- Amount -->
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-dollar-sign label-icon"></i>
-                                Amount <span class="text-danger">*</span>
-                            </label>
-                            <input type="number" x-model.number="quickAddForm.amount" data-quick-add-amount step="0.01" min="0.01" required class="form-control form-control-lg" placeholder="0.00" autofocus>
-                        </div>
-                    </div>
-
-                    <!-- Type -->
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-tag label-icon"></i>
-                                Type <span class="text-danger">*</span>
-                            </label>
-                            <select x-model="quickAddForm.type" required class="form-select form-select-lg">
-                                <option value="expense">💸 Expense</option>
-                                <option value="income">💰 Income</option>
-                                <option value="savings">🏦 Savings</option>
-                                <option value="bank_deposit">🏧 Bank Deposit</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Category -->
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-list label-icon"></i>
-                                Category <span class="text-danger">*</span>
-                            </label>
-                            <select x-model.number="quickAddForm.category_id" required class="form-select form-select-lg">
-                                <option value="">Select Category</option>
-                                <template x-for="category in quickAddFilteredCategories" :key="category.id">
-                                    <option :value="category.id" x-text="category.icon + ' ' + category.name"></option>
-                                </template>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Description -->
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-sticky-note label-icon"></i>
-                                Description (Optional)
-                            </label>
-                            <input type="text" x-model="quickAddForm.description" class="form-control" placeholder="Add notes about this transaction...">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Form Actions -->
-                <div class="modal-footer border-0 mt-4 pt-3" style="border-top: 1px solid var(--border-color);">
-                    <button type="button" @click="closeQuickAddModal()" class="btn btn-outline-secondary flex-grow-1" :disabled="isSubmitting">
-                        <i class="fas fa-times me-2"></i>Cancel
-                    </button>
-                    <button type="submit" class="btn btn-success flex-grow-1" :disabled="isSubmitting">
-                        <span x-show="!isSubmitting">
-                            <i class="fas fa-plus me-2"></i>Add
-                        </span>
-                        <span x-show="isSubmitting">
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            Adding...
-                        </span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Backdrop -->
-<div x-show="showModal || showQuickAddModal" x-cloak class="modal-backdrop fade" :class="(showModal || showQuickAddModal) && 'show'" style="display: none;" :style="(showModal || showQuickAddModal) && 'display: block;'"></div>
 @endsection
 
 @push('scripts')
 <script>
-    // Initialize financial categories data
-    window.financialCategories = @json($categories);
-    console.log('Financial categories loaded:', window.financialCategories);
-</script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-<script src="{{ asset('js/financial.js') }}"></script>
-<script>
+    // Set today's date as default
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Financial dashboard page loaded');
-        console.log('Alpine.js version:', window.Alpine ? 'Loaded' : 'Not loaded');
-    });
-
-    // Debug Alpine.js initialization
-    document.addEventListener('alpine:init', () => {
-        console.log('Alpine.js initialized successfully');
-    });
-
-    // Error handling for any JavaScript errors
-    window.addEventListener('error', function(e) {
-        console.error('JavaScript error:', e.error);
-        console.error('Error message:', e.message);
-        console.error('Error file:', e.filename);
-        console.error('Error line:', e.lineno);
-    });
-
-    // Fallback for manual modal opening if Alpine.js fails
-    window.openModalFallback = function() {
-        console.log('Fallback modal function called');
-        const modal = document.getElementById('transactionModal');
-        if (modal) {
-            modal.style.display = 'block';
-            modal.classList.add('show');
+        const dateInput = document.querySelector('input[name="transaction_date"]');
+        if (dateInput) {
+            dateInput.valueAsDate = new Date();
         }
-    };
+    });
 
-    // Check if Alpine.js loaded properly after 3 seconds
-    setTimeout(() => {
-        if (!window.Alpine) {
-            console.error('Alpine.js failed to load! Financial page functionality may be limited.');
-            // Show a user-friendly message
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-warning position-fixed';
-            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
-            alertDiv.innerHTML = `
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Page functionality is limited. Please refresh the page.
-                <button type="button" class="btn-close" onclick="this.parentNode.remove()"></button>
-            `;
-            document.body.appendChild(alertDiv);
+    // Filter categories by type
+    function filterCategories() {
+        const typeSelect = document.querySelector('select[name="type"]');
+        const categorySelect = document.getElementById('categorySelect');
+        const selectedType = typeSelect.value;
+
+        // Show/hide categories based on type
+        Array.from(categorySelect.options).forEach(option => {
+            if (option.value === '') {
+                option.style.display = 'block';
+            } else {
+                const optionType = option.getAttribute('data-type');
+                option.style.display = (optionType === selectedType) ? 'block' : 'none';
+            }
+        });
+
+        // Reset category selection
+        categorySelect.value = '';
+    }
+
+    // Edit transaction
+    function editTransaction(id) {
+        alert('Edit functionality coming soon!');
+    }
+
+    // Delete transaction
+    function deleteTransaction(id) {
+        if (confirm('Are you sure you want to delete this transaction?')) {
+            fetch(`/financial/transaction/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Transaction deleted successfully');
+                    location.reload();
+                } else {
+                    alert('Error deleting transaction: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting transaction');
+            });
         }
-    }, 3000);
+    }
+
+    // Export transactions
+    function exportTransactions() {
+        window.location.href = '/financial/export';
+    }
+
+    // Handle form submission
+    document.getElementById('transactionForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData);
+
+        fetch('{{ route("financial.store") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Transaction added successfully');
+                location.reload();
+            } else {
+                const errors = data.errors || {};
+                const errorMessages = Object.values(errors).flat().join('\n');
+                alert('Error: ' + (errorMessages || data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error adding transaction: ' + error.message);
+        });
+    });
 </script>
 @endpush
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/financial.css') }}">
 <style>
-    [x-cloak] { display: none !important; }
-    .modal.show { display: block; }
-    .modal-backdrop.show { opacity: 0.5; }
+    .modal-content {
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-label {
+        color: #374151;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        outline: none;
+    }
+
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        border: none;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+    }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(59, 175, 218, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(59, 175, 218, 0.2);
+    }
+
+    @media (max-width: 640px) {
+        .form-control, .form-select {
+            font-size: 16px;
+            padding: 0.65rem 0.75rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+    }
 </style>
 @endpush

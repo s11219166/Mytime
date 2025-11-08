@@ -261,6 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const endDateInput = document.getElementById('end_date');
     const form = document.getElementById('projectForm');
     let isSubmitting = false;
+    let submitAttempts = 0;
 
     // Set minimum end date when start date changes
     function updateEndDateMin() {
@@ -280,21 +281,66 @@ document.addEventListener('DOMContentLoaded', function() {
     startDateInput.addEventListener('change', updateEndDateMin);
     updateEndDateMin();
 
-    // Prevent duplicate form submissions
+    // Prevent duplicate form submissions - STRICT VERSION
     form.addEventListener('submit', function(e) {
-        if (isSubmitting) {
+        submitAttempts++;
+        
+        // Prevent any submission after the first one
+        if (isSubmitting || submitAttempts > 1) {
             e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            console.warn('Form submission blocked - already submitting');
             return false;
         }
+        
         isSubmitting = true;
         
-        // Disable submit button to prevent multiple clicks
+        // Disable submit button immediately
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) {
             submitBtn.disabled = true;
+            submitBtn.style.pointerEvents = 'none';
+            submitBtn.style.opacity = '0.6';
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Project...';
         }
+        
+        // Disable all form inputs
+        const inputs = form.querySelectorAll('input, select, textarea, button');
+        inputs.forEach(input => {
+            if (input !== submitBtn) {
+                input.disabled = true;
+            }
+        });
+        
+        // Set a timeout to prevent any further submissions for 5 seconds
+        setTimeout(() => {
+            isSubmitting = false;
+        }, 5000);
     });
+
+    // Also prevent submission on Enter key in input fields
+    form.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+            if (isSubmitting) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+
+    // Prevent double-click on submit button
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function(e) {
+            if (isSubmitting) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        });
+    }
 
     // Auto-focus name field on desktop
     if (window.innerWidth > 768) {

@@ -340,7 +340,9 @@ function financialDashboard() {
         // Filter categories by type
         filterCategoriesByType() {
             try {
-                this.formData.category_id = '';
+                console.log('Filtering categories by type:', this.formData.type);
+                // Don't clear category_id, just filter the available options
+                // The user can select from filtered categories
             } catch (error) {
                 console.error('Error filtering categories by type:', error);
             }
@@ -350,10 +352,23 @@ function financialDashboard() {
         async submitTransaction() {
             try {
                 console.log('Submitting transaction...');
+                console.log('Form data:', this.formData);
 
                 // Validate required fields
-                if (!this.formData.transaction_date || !this.formData.type || !this.formData.category_id || !this.formData.amount) {
-                    this.showNotification('Please fill in all required fields', 'error');
+                if (!this.formData.transaction_date) {
+                    this.showNotification('Please select a transaction date', 'error');
+                    return;
+                }
+                if (!this.formData.type) {
+                    this.showNotification('Please select a transaction type', 'error');
+                    return;
+                }
+                if (!this.formData.category_id) {
+                    this.showNotification('Please select a category', 'error');
+                    return;
+                }
+                if (!this.formData.amount) {
+                    this.showNotification('Please enter an amount', 'error');
                     return;
                 }
 
@@ -372,26 +387,40 @@ function financialDashboard() {
                     category_id: parseInt(this.formData.category_id),
                     amount: parseFloat(this.formData.amount),
                     description: this.formData.description || '',
-                    status: this.formData.status,
+                    status: this.formData.status || 'completed',
                     reference_number: this.formData.reference_number || ''
                 };
+
+                console.log('Submitting data:', submitData);
+                console.log('URL:', url);
+                console.log('Method:', method);
 
                 // Add id for edit mode
                 if (this.editMode) {
                     submitData.id = this.formData.id;
                 }
 
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                if (!csrfToken) {
+                    console.error('CSRF token not found!');
+                    this.showNotification('Security token missing. Please refresh the page.', 'error');
+                    this.isSubmitting = false;
+                    return;
+                }
+
                 const response = await fetch(url, {
                     method: method,
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-CSRF-TOKEN': csrfToken.content,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify(submitData)
                 });
 
+                console.log('Response status:', response.status);
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 if (response.ok && data.success) {
                     this.showNotification(
@@ -404,14 +433,17 @@ function financialDashboard() {
                     // Handle validation errors
                     if (data.errors) {
                         const errorMessages = Object.values(data.errors).flat().join(', ');
+                        console.error('Validation errors:', data.errors);
                         this.showNotification(errorMessages, 'error');
                     } else {
+                        console.error('Server error:', data);
                         this.showNotification(data.message || 'An error occurred', 'error');
                     }
                     this.isSubmitting = false;
                 }
             } catch (error) {
                 console.error('Error submitting transaction:', error);
+                console.error('Error stack:', error.stack);
                 this.showNotification('Failed to save transaction: ' + error.message, 'error');
                 this.isSubmitting = false;
             }
