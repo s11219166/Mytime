@@ -167,7 +167,7 @@
                         <!-- Form Actions -->
                         <div class="d-grid d-md-flex justify-content-md-end gap-2 mt-4">
                             <a href="{{ route('projects.index') }}" class="btn btn-outline-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-success"><i class="fas fa-save me-2"></i>Create Project</button>
+                            <button type="submit" class="btn btn-success" id="submitBtn"><i class="fas fa-save me-2"></i>Create Project</button>
                         </div>
                     </form>
                 </div>
@@ -260,8 +260,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const startDateInput = document.getElementById('start_date');
     const endDateInput = document.getElementById('end_date');
     const form = document.getElementById('projectForm');
+    const submitBtn = document.getElementById('submitBtn');
     let isSubmitting = false;
-    let submitAttempts = 0;
 
     // Set minimum end date when start date changes
     function updateEndDateMin() {
@@ -281,23 +281,18 @@ document.addEventListener('DOMContentLoaded', function() {
     startDateInput.addEventListener('change', updateEndDateMin);
     updateEndDateMin();
 
-    // Prevent duplicate form submissions - STRICT VERSION
+    // Prevent duplicate form submissions
     form.addEventListener('submit', function(e) {
-        submitAttempts++;
-        
-        // Prevent any submission after the first one
-        if (isSubmitting || submitAttempts > 1) {
+        if (isSubmitting) {
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
-            console.warn('Form submission blocked - already submitting');
             return false;
         }
         
         isSubmitting = true;
         
-        // Disable submit button immediately
-        const submitBtn = form.querySelector('button[type="submit"]');
+        // Disable submit button
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.style.pointerEvents = 'none';
@@ -313,34 +308,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Set a timeout to prevent any further submissions for 5 seconds
+        // Allow resubmission after 5 seconds if needed
         setTimeout(() => {
             isSubmitting = false;
         }, 5000);
     });
-
-    // Also prevent submission on Enter key in input fields
-    form.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
-            if (isSubmitting) {
-                e.preventDefault();
-                return false;
-            }
-        }
-    });
-
-    // Prevent double-click on submit button
-    const submitBtn = form.querySelector('button[type="submit"]');
-    if (submitBtn) {
-        submitBtn.addEventListener('click', function(e) {
-            if (isSubmitting) {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                return false;
-            }
-        });
-    }
 
     // Auto-focus name field on desktop
     if (window.innerWidth > 768) {
