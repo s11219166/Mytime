@@ -509,28 +509,8 @@
             });
         }
 
-        // Force full page refresh on sidebar navigation
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
-            sidebarLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    // Get the href
-                    const href = this.getAttribute('href');
-                    
-                    // If it's a valid link (not #), do a full page reload
-                    if (href && href !== '#' && !href.startsWith('javascript:')) {
-                        // Add a small delay to show the click effect
-                        setTimeout(function() {
-                            // Force a hard refresh with cache busting
-                            window.location.href = href + (href.includes('?') ? '&' : '?') + 'refresh=' + Date.now();
-                        }, 100);
-                        
-                        // Prevent default navigation
-                        e.preventDefault();
-                    }
-                });
-            });
-        });
+        // Normal sidebar navigation (no cache busting - it breaks sessions)
+        // Just let the browser handle normal navigation
 
         // Real-time notification functionality
         document.addEventListener('DOMContentLoaded', function() {
