@@ -369,12 +369,14 @@
 
     // Delete transaction
     function deleteTransaction(id) {
-        if (confirm('Are you sure you want to delete this transaction?')) {            fetch(`/financial/transaction/${id}?t=${Date.now()}`, {
+        if (confirm('Are you sure you want to delete this transaction?')) {
+            fetch(`/financial/transaction/${id}?t=${Date.now()}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json',
-                    'Cache-Control': 'no-cache, no-store, must-revalidate'
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache'
                 }
             })
             .then(response => response.json())
@@ -406,12 +408,14 @@
         const formData = new FormData(this);
         const data = Object.fromEntries(formData);
 
-        fetch('{{ route("financial.store") }}', {
+        fetch('{{ route("financial.store") }}?t=' + Date.now(), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
             },
             body: JSON.stringify(data)
         })
@@ -419,7 +423,7 @@
         .then(data => {
             if (data.success) {
                 alert('Transaction added successfully');
-                location.reload();
+                window.location.href = window.location.pathname + '?t=' + Date.now();
             } else {
                 const errors = data.errors || {};
                 const errorMessages = Object.values(errors).flat().join('\n');
