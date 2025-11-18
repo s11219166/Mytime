@@ -32,55 +32,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/session/break/end', [DashboardController::class, 'endBreak'])->name('session.break.end');
     Route::post('/session/end', [DashboardController::class, 'endSession'])->name('session.end');
 
-    // Admin Dashboard
+    // Admin Dashboard - Redirect to main dashboard (role-based display)
     Route::get('/admin/dashboard', function () {
         if (!Auth::user()->isAdmin()) {
             return redirect('/dashboard');
         }
-
-        // Build session metrics - only if table exists
-        $myTodaySessions = 0;
-        $myTotalSessions = 0;
-        $globalTodaySessions = 0;
-        $globalTotalSessions = 0;
-        $activeAdmins = 0;
-        $recentSessions = [];
-        $lastSession = null;
-        $avgDailySessions = 0;
-
-        if (\Illuminate\Support\Facades\Schema::hasTable('admin_sessions')) {
-            try {
-                $userId = Auth::id();
-                $today = now()->toDateString();
-                $myTodaySessions = \App\Models\AdminSession::where('user_id', $userId)
-                    ->whereDate('created_at', $today)->count();
-                $myTotalSessions = \App\Models\AdminSession::where('user_id', $userId)->count();
-                $globalTodaySessions = \App\Models\AdminSession::whereDate('created_at', $today)->count();
-                $globalTotalSessions = \App\Models\AdminSession::count();
-                $activeAdmins = \App\Models\AdminSession::where('started_at', '>=', now()->subMinutes(30))
-                    ->distinct('user_id')->count('user_id');
-                $recentSessions = \App\Models\AdminSession::where('user_id', $userId)
-                    ->orderBy('created_at', 'desc')->limit(10)->get();
-                $lastSession = \App\Models\AdminSession::where('user_id', $userId)
-                    ->latest('created_at')->first();
-                $last7 = \App\Models\AdminSession::where('user_id', $userId)
-                    ->where('created_at', '>=', now()->subDays(7))->count();
-                $avgDailySessions = round($last7 / 7, 2);
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('AdminSession query failed: ' . $e->getMessage());
-            }
-        }
-
-        return view('admin.dashboard', compact(
-            'myTodaySessions',
-            'myTotalSessions',
-            'globalTodaySessions',
-            'globalTotalSessions',
-            'activeAdmins',
-            'recentSessions',
-            'lastSession',
-            'avgDailySessions'
-        ));
+        return redirect('/dashboard');
     })->middleware('admin')->name('admin.dashboard');
 
     // Admin session heartbeat to update last activity (ended_at)

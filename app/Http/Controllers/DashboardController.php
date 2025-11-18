@@ -78,13 +78,64 @@ class DashboardController extends Controller
                 return $session;
             });
 
-        return view('dashboard', compact(
-            'sessionTime',
-            'sessionStart',
-            'todayStats',
-            'currentSession',
-            'recentSessions'
-        ));
+        // Prepare data based on user role
+        if ($user->isAdmin()) {
+            // Admin dashboard data
+            $adminStats = [
+                'total_users' => \App\Models\User::count(),
+                'total_projects' => Project::count(),
+                'active_projects' => Project::whereIn('status', ['active', 'inprogress'])->count(),
+                'overdue_projects' => Project::where('end_date', '<', now())
+                    ->whereNotIn('status', ['completed', 'cancelled'])
+                    ->count(),
+            ];
+
+            return view('dashboard', compact(
+                'sessionTime',
+                'sessionStart',
+                'todayStats',
+                'currentSession',
+                'recentSessions',
+                'adminStats'
+            ));
+        } else {
+            // User dashboard data
+            $userProjectIds = DB::table('projects')
+                ->where('created_by', $user->id)
+                ->orWhereIn('id', function($q) use ($user) {
+                    $q->select('project_id')
+                      ->from('project_user')
+                      ->where('user_id', $user->id);
+                })
+                ->pluck('id');
+
+            $stats = [
+                'active_projects' => Project::whereIn('id', $userProjectIds)
+                    ->whereIn('status', ['active', 'inprogress'])
+                    ->count(),
+                'completed_projects' => Project::whereIn('id', $userProjectIds)
+                    ->where('status', 'completed')
+                    ->count(),
+                'completion_rate' => $userProjectIds->count() > 0 
+                    ? round((Project::whereIn('id', $userProjectIds)->where('status', 'completed')->count() / $userProjectIds->count()) * 100)
+                    : 0,
+                'total_hours' => $this->formatDuration(TimeEntry::where('user_id', $user->id)
+                    ->whereMonth('start_time', now()->month)
+                    ->sum('duration_minutes')),
+                'unread_notifications' => $user->notifications()
+                    ->where('is_read', false)
+                    ->count(),
+            ];
+
+            return view('dashboard', compact(
+                'sessionTime',
+                'sessionStart',
+                'todayStats',
+                'currentSession',
+                'recentSessions',
+                'stats'
+            ));
+        }
     }
 
     public function addNote(Request $request)

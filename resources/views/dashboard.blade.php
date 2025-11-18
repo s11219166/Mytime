@@ -4,15 +4,15 @@
 
 @push('styles')
 <style>
-    * {
+    :root {
         --primary: #3b82f6;
         --success: #10b981;
         --danger: #ef4444;
         --warning: #f59e0b;
         --info: #06b6d4;
         --purple: #8b5cf6;
-        --pink: #ec4899;
-        --indigo: #6366f1;
+        --dark: #1f2937;
+        --light: #f3f4f6;
     }
 
     body {
@@ -23,9 +23,9 @@
     .dashboard-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 3rem 2rem;
-        border-radius: 20px;
-        margin-bottom: 3rem;
+        padding: 2.5rem 2rem;
+        border-radius: 16px;
+        margin-bottom: 2.5rem;
         box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
         position: relative;
         overflow: hidden;
@@ -42,64 +42,40 @@
         border-radius: 50%;
     }
 
-    .dashboard-header::after {
-        content: '';
-        position: absolute;
-        bottom: -30%;
-        left: -5%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 50%;
-    }
-
     .dashboard-header-content {
         position: relative;
         z-index: 1;
     }
 
     .dashboard-header h1 {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 800;
         margin-bottom: 0.5rem;
         text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
     .dashboard-header p {
-        font-size: 1.1rem;
+        font-size: 1rem;
         opacity: 0.95;
         margin: 0;
     }
 
     .stat-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        background: white;
         border: none;
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
-        min-height: 200px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--card-color), transparent);
+        border-left: 4px solid var(--card-color, var(--primary));
     }
 
     .stat-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
     }
 
     .stat-card.primary { --card-color: var(--primary); }
@@ -108,24 +84,28 @@
     .stat-card.warning { --card-color: var(--warning); }
     .stat-card.info { --card-color: var(--info); }
     .stat-card.purple { --card-color: var(--purple); }
-    .stat-card.pink { --card-color: var(--pink); }
-    .stat-card.indigo { --card-color: var(--indigo); }
+
+    .stat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
 
     .stat-icon {
-        width: 80px;
-        height: 80px;
-        border-radius: 16px;
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.5rem;
-        margin-bottom: 1.5rem;
-        background: linear-gradient(135deg, var(--card-color), rgba(var(--card-color-rgb), 0.1));
-        color: var(--card-color);
+        font-size: 1.5rem;
+        background: rgba(var(--card-color-rgb, 59, 130, 246), 0.1);
+        color: var(--card-color, var(--primary));
     }
 
     .stat-title {
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         color: #6b7280;
         font-weight: 600;
         text-transform: uppercase;
@@ -134,155 +114,81 @@
     }
 
     .stat-value {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 800;
-        color: #1f2937;
-        margin-bottom: 1rem;
-    }
-
-    .stat-description {
-        font-size: 0.9rem;
-        color: #9ca3af;
-        margin-bottom: 1.5rem;
-    }
-
-    .stat-button {
-        align-self: flex-start;
-        padding: 0.75rem 1.5rem;
-        border-radius: 10px;
-        border: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        background: linear-gradient(135deg, var(--card-color), rgba(var(--card-color-rgb), 0.8));
-        color: white;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .stat-button:hover {
-        transform: translateX(5px);
-        box-shadow: 0 10px 20px rgba(var(--card-color-rgb), 0.3);
-    }
-
-    .quick-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        margin-top: 2rem;
-    }
-
-    .quick-stat-item {
-        background: rgba(var(--card-color-rgb), 0.1);
-        padding: 1rem;
-        border-radius: 12px;
-        text-align: center;
-    }
-
-    .quick-stat-value {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: var(--card-color);
+        color: var(--dark);
         margin-bottom: 0.5rem;
     }
 
-    .quick-stat-label {
+    .stat-description {
         font-size: 0.85rem;
-        color: #6b7280;
-        font-weight: 600;
+        color: #9ca3af;
     }
 
     .section-title {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         font-weight: 800;
-        color: #1f2937;
-        margin-bottom: 2rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .section-title::before {
-        content: '';
-        width: 4px;
-        height: 2rem;
-        background: linear-gradient(180deg, var(--primary), var(--info));
-        border-radius: 2px;
-    }
-
-    .sidebar-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border: none;
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-    }
-
-    .sidebar-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
-    }
-
-    .sidebar-card-header {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #1f2937;
+        color: var(--dark);
         margin-bottom: 1.5rem;
         display: flex;
         align-items: center;
         gap: 0.75rem;
     }
 
-    .sidebar-card-header i {
-        font-size: 1.3rem;
+    .section-title i {
         color: var(--primary);
+        font-size: 1.5rem;
     }
 
-    .list-item {
+    .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .quick-action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
         padding: 1rem;
-        border-bottom: 1px solid #e5e7eb;
-        transition: all 0.2s ease;
-    }
-
-    .list-item:last-child {
-        border-bottom: none;
-    }
-
-    .list-item:hover {
-        background: rgba(59, 130, 246, 0.05);
-        padding-left: 1.5rem;
-    }
-
-    .list-item-title {
+        border-radius: 10px;
+        border: none;
         font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 0.25rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: white;
+        text-align: center;
     }
 
-    .list-item-meta {
-        font-size: 0.85rem;
-        color: #9ca3af;
+    .quick-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
     }
 
-    .badge-custom {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.85rem;
+    .quick-action-btn.primary {
+        background: linear-gradient(135deg, var(--primary), #1e40af);
     }
 
-    .badge-primary { background: rgba(59, 130, 246, 0.2); color: #1e40af; }
-    .badge-success { background: rgba(16, 185, 129, 0.2); color: #065f46; }
-    .badge-danger { background: rgba(239, 68, 68, 0.2); color: #7f1d1d; }
-    .badge-warning { background: rgba(245, 158, 11, 0.2); color: #92400e; }
+    .quick-action-btn.success {
+        background: linear-gradient(135deg, var(--success), #047857);
+    }
 
-    .admin-redirect-banner {
+    .quick-action-btn.warning {
+        background: linear-gradient(135deg, var(--warning), #d97706);
+    }
+
+    .quick-action-btn.info {
+        background: linear-gradient(135deg, var(--info), #0e7490);
+    }
+
+    .admin-banner {
         background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
         color: white;
         padding: 1.5rem;
-        border-radius: 16px;
+        border-radius: 12px;
         margin-bottom: 2rem;
         box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
         display: flex;
@@ -291,113 +197,200 @@
         gap: 1rem;
     }
 
-    .admin-redirect-banner i {
-        font-size: 2rem;
-    }
-
-    .admin-redirect-content {
+    .admin-banner-content {
         flex: 1;
     }
 
-    .admin-redirect-content h3 {
+    .admin-banner-content h3 {
         margin: 0 0 0.5rem 0;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 700;
     }
 
-    .admin-redirect-content p {
+    .admin-banner-content p {
         margin: 0;
         opacity: 0.95;
+        font-size: 0.95rem;
     }
 
-    .admin-redirect-button {
+    .admin-banner i {
+        font-size: 2rem;
+    }
+
+    .admin-banner-btn {
         background: white;
         color: #f59e0b;
         padding: 0.75rem 1.5rem;
-        border-radius: 10px;
+        border-radius: 8px;
         border: none;
         font-weight: 700;
         cursor: pointer;
         transition: all 0.3s ease;
         text-decoration: none;
         display: inline-block;
+        white-space: nowrap;
     }
 
-    .admin-redirect-button:hover {
+    .admin-banner-btn:hover {
         transform: scale(1.05);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     }
 
+    .list-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+    }
+
+    .list-card-header {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .list-card-header i {
+        color: var(--primary);
+    }
+
+    .list-item {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .list-item:last-child {
+        border-bottom: none;
+    }
+
+    .list-item:hover {
+        background: var(--light);
+        padding-left: 1.5rem;
+    }
+
+    .list-item-title {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .list-item-meta {
+        font-size: 0.85rem;
+        color: #9ca3af;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+    }
+
+    .badge-primary { background: rgba(59, 130, 246, 0.2); color: #1e40af; }
+    .badge-success { background: rgba(16, 185, 129, 0.2); color: #065f46; }
+    .badge-danger { background: rgba(239, 68, 68, 0.2); color: #7f1d1d; }
+    .badge-warning { background: rgba(245, 158, 11, 0.2); color: #92400e; }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #9ca3af;
+    }
+
+    .empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .admin-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .admin-action-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .admin-action-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .admin-action-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+
+    .admin-action-title {
+        font-weight: 700;
+        color: var(--dark);
+    }
+
+    .admin-action-desc {
+        font-size: 0.85rem;
+        color: #9ca3af;
+    }
+
     @media (max-width: 768px) {
         .dashboard-header {
-            padding: 2rem 1.5rem;
+            padding: 1.5rem 1rem;
         }
 
         .dashboard-header h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
         }
 
-        .stat-card {
-            padding: 1.5rem;
-            min-height: 180px;
+        .card-grid {
+            grid-template-columns: 1fr;
         }
 
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            font-size: 2rem;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-        }
-
-        .section-title {
-            font-size: 1.2rem;
-        }
-
-        .admin-redirect-banner {
+        .admin-banner {
             flex-direction: column;
             text-align: center;
         }
-    }
 
-    .gradient-text {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
+        .admin-banner-btn {
+            width: 100%;
+        }
 
-    .floating-animation {
-        animation: float 3s ease-in-out infinite;
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
+        .admin-stats-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 @endpush
 
 @section('content')
 <div class="container-fluid py-4">
-    <!-- Admin Redirect Banner -->
-    @if(Auth::user()->isAdmin())
-    <div class="admin-redirect-banner floating-animation">
-        <div>
-            <i class="fas fa-crown"></i>
-        </div>
-        <div class="admin-redirect-content">
-            <h3>Welcome, Admin!</h3>
-            <p>You have access to the admin dashboard with advanced features and controls.</p>
-        </div>
-        <a href="{{ route('admin.dashboard') }}" class="admin-redirect-button">
-            <i class="fas fa-arrow-right me-2"></i>Go to Admin Dashboard
-        </a>
-    </div>
-    @endif
-
     <!-- Dashboard Header -->
     <div class="dashboard-header">
         <div class="dashboard-header-content">
@@ -406,259 +399,298 @@
         </div>
     </div>
 
-    <!-- Main Stats Grid -->
-    <div class="row">
-        <div class="col-lg-8">
-            <h2 class="section-title">
-                <i class="fas fa-chart-line"></i>Your Dashboard
-            </h2>
-
-            <div class="row">
-                <!-- Projects Card -->
-                <div class="col-md-6 col-lg-6">
-                    <div class="stat-card primary">
-                        <div>
-                            <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, rgba(59, 130, 246, 0.1)); color: #3b82f6;">
-                                <i class="fas fa-tasks"></i>
-                            </div>
-                            <div class="stat-title">Active Projects</div>
-                            <div class="stat-value">{{ $stats['active_projects'] ?? 0 }}</div>
-                            <div class="stat-description">Manage your projects and track progress</div>
-                        </div>
-                        <a href="{{ route('projects.index') }}" class="stat-button" style="background: linear-gradient(135deg, #3b82f6, #1e40af);">
-                            <i class="fas fa-arrow-right me-2"></i>View Projects
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Analytics Card -->
-                <div class="col-md-6 col-lg-6">
-                    <div class="stat-card info">
-                        <div>
-                            <div class="stat-icon" style="background: linear-gradient(135deg, #06b6d4, rgba(6, 182, 212, 0.1)); color: #06b6d4;">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <div class="stat-title">Performance</div>
-                            <div class="stat-value">{{ $stats['completion_rate'] ?? 0 }}%</div>
-                            <div class="stat-description">Your overall completion rate</div>
-                        </div>
-                        <a href="{{ route('analytics') }}" class="stat-button" style="background: linear-gradient(135deg, #06b6d4, #0e7490);">
-                            <i class="fas fa-arrow-right me-2"></i>View Analytics
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Financial Card -->
-                <div class="col-md-6 col-lg-6">
-                    <div class="stat-card warning">
-                        <div>
-                            <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, rgba(245, 158, 11, 0.1)); color: #f59e0b;">
-                                <i class="fas fa-wallet"></i>
-                            </div>
-                            <div class="stat-title">Financial Status</div>
-                            <div class="stat-value">${{ number_format($stats['total_balance'] ?? 0, 2) }}</div>
-                            <div class="stat-description">Your current financial balance</div>
-                        </div>
-                        <a href="{{ route('financial.index') }}" class="stat-button" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                            <i class="fas fa-arrow-right me-2"></i>View Financial
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Time Logs Card -->
-                <div class="col-md-6 col-lg-6">
-                    <div class="stat-card success">
-                        <div>
-                            <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, rgba(16, 185, 129, 0.1)); color: #10b981;">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="stat-title">Time Tracked</div>
-                            <div class="stat-value">{{ $stats['total_hours'] ?? 0 }}h</div>
-                            <div class="stat-description">Total hours logged this month</div>
-                        </div>
-                        <a href="{{ route('time-logs.index') }}" class="stat-button" style="background: linear-gradient(135deg, #10b981, #047857);">
-                            <i class="fas fa-arrow-right me-2"></i>View Time Logs
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Notifications Card -->
-                <div class="col-md-6 col-lg-6">
-                    <div class="stat-card danger">
-                        <div>
-                            <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, rgba(239, 68, 68, 0.1)); color: #ef4444;">
-                                <i class="fas fa-bell"></i>
-                            </div>
-                            <div class="stat-title">Notifications</div>
-                            <div class="stat-value">{{ $stats['unread_notifications'] ?? 0 }}</div>
-                            <div class="stat-description">Unread messages and alerts</div>
-                        </div>
-                        <a href="{{ route('notifications') }}" class="stat-button" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                            <i class="fas fa-arrow-right me-2"></i>View Notifications
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Profile Card -->
-                <div class="col-md-6 col-lg-6">
-                    <div class="stat-card purple">
-                        <div>
-                            <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, rgba(139, 92, 246, 0.1)); color: #8b5cf6;">
-                                <i class="fas fa-user-cog"></i>
-                            </div>
-                            <div class="stat-title">Account Settings</div>
-                            <div class="stat-value">{{ Auth::user()->role ?? 'User' }}</div>
-                            <div class="stat-description">Manage your profile and preferences</div>
-                        </div>
-                        <a href="{{ route('profile') }}" class="stat-button" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
-                            <i class="fas fa-arrow-right me-2"></i>Edit Profile
-                        </a>
-                    </div>
-                </div>
+    @if(Auth::user()->isAdmin())
+        <!-- ADMIN DASHBOARD -->
+        
+        <!-- Admin Banner -->
+        <div class="admin-banner">
+            <div>
+                <i class="fas fa-crown"></i>
             </div>
+            <div class="admin-banner-content">
+                <h3>Admin Access</h3>
+                <p>You have full system access and can manage all users and projects.</p>
+            </div>
+            <a href="{{ route('admin.dashboard') }}" class="admin-banner-btn">
+                <i class="fas fa-arrow-right me-2"></i>Admin Panel
+            </a>
         </div>
 
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Today's Stats -->
-            <div class="sidebar-card">
-                <div class="sidebar-card-header">
-                    <i class="fas fa-calendar-day"></i>Today's Stats
-                </div>
-                <div class="quick-stats">
-                    <div class="quick-stat-item">
-                        <div class="quick-stat-value">{{ $todayStats['sessions'] ?? 0 }}</div>
-                        <div class="quick-stat-label">Sessions</div>
-                    </div>
-                    <div class="quick-stat-item">
-                        <div class="quick-stat-value">{{ $todayStats['total_time'] ?? '0h' }}</div>
-                        <div class="quick-stat-label">Total Time</div>
-                    </div>
-                    <div class="quick-stat-item">
-                        <div class="quick-stat-value">{{ $todayStats['avg_session'] ?? '0m' }}</div>
-                        <div class="quick-stat-label">Avg Session</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Upcoming Due Projects -->
-            <div class="sidebar-card">
-                <div class="sidebar-card-header">
-                    <i class="fas fa-exclamation-circle"></i>Upcoming Due
-                </div>
-                <div id="upcomingProjects">
-                    <div class="text-center p-3 text-muted">
-                        <i class="fas fa-spinner fa-spin"></i> Loading...
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Notifications -->
-            <div class="sidebar-card">
-                <div class="sidebar-card-header">
-                    <i class="fas fa-bell"></i>Recent Notifications
-                </div>
-                <div id="recentNotifications">
-                    <div class="text-center p-3 text-muted">
-                        <i class="fas fa-spinner fa-spin"></i> Loading...
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="sidebar-card">
-                <div class="sidebar-card-header">
-                    <i class="fas fa-lightning-bolt"></i>Quick Actions
-                </div>
-                <div class="d-grid gap-2">
-                    <a href="{{ route('projects.create') }}" class="btn btn-primary" style="background: linear-gradient(135deg, #3b82f6, #1e40af); border: none; padding: 0.75rem; border-radius: 10px; color: white; text-decoration: none; font-weight: 600;">
-                        <i class="fas fa-plus me-2"></i>New Project
-                    </a>
-                    <a href="{{ route('financial.index') }}" class="btn btn-warning" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: none; padding: 0.75rem; border-radius: 10px; color: white; text-decoration: none; font-weight: 600;">
-                        <i class="fas fa-wallet me-2"></i>Financial Dashboard
-                    </a>
-                    <a href="{{ route('inspiration') }}" class="btn btn-success" style="background: linear-gradient(135deg, #10b981, #047857); border: none; padding: 0.75rem; border-radius: 10px; color: white; text-decoration: none; font-weight: 600;">
-                        <i class="fas fa-lightbulb me-2"></i>Get Inspired
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Additional Features Grid -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <h2 class="section-title">
-                <i class="fas fa-star"></i>More Features
-            </h2>
+        <!-- Admin Stats -->
+        <div class="section-title">
+            <i class="fas fa-chart-bar"></i>System Overview
         </div>
 
-        <div class="col-md-6 col-lg-3">
-            <div class="stat-card indigo">
-                <div>
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1, rgba(99, 102, 241, 0.1)); color: #6366f1;">
-                        <i class="fas fa-calendar-alt"></i>
+        <div class="admin-stats-grid">
+            <div class="stat-card primary">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Total Users</div>
+                        <div class="stat-value">{{ $adminStats['total_users'] ?? 0 }}</div>
                     </div>
-                    <div class="stat-title">Calendar</div>
-                    <div class="stat-description">View your schedule and deadlines</div>
-                </div>
-                <a href="#" class="stat-button" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
-                    <i class="fas fa-arrow-right me-2"></i>Open
-                </a>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3">
-            <div class="stat-card pink">
-                <div>
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #ec4899, rgba(236, 72, 153, 0.1)); color: #ec4899;">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                    <div class="stat-title">Reports</div>
-                    <div class="stat-description">Generate and download reports</div>
-                </div>
-                <a href="#" class="stat-button" style="background: linear-gradient(135deg, #ec4899, #be185d);">
-                    <i class="fas fa-arrow-right me-2"></i>View
-                </a>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3">
-            <div class="stat-card" style="--card-color: #14b8a6;">
-                <div>
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #14b8a6, rgba(20, 184, 166, 0.1)); color: #14b8a6;">
+                    <div class="stat-icon">
                         <i class="fas fa-users"></i>
                     </div>
-                    <div class="stat-title">Team</div>
-                    <div class="stat-description">Collaborate with team members</div>
                 </div>
-                <a href="#" class="stat-button" style="background: linear-gradient(135deg, #14b8a6, #0d9488);">
-                    <i class="fas fa-arrow-right me-2"></i>View
-                </a>
+                <div class="stat-description">Active users in the system</div>
+            </div>
+
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Total Projects</div>
+                        <div class="stat-value">{{ $adminStats['total_projects'] ?? 0 }}</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                </div>
+                <div class="stat-description">All projects in the system</div>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Active Projects</div>
+                        <div class="stat-value">{{ $adminStats['active_projects'] ?? 0 }}</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-spinner"></i>
+                    </div>
+                </div>
+                <div class="stat-description">Currently in progress</div>
+            </div>
+
+            <div class="stat-card danger">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Overdue Projects</div>
+                        <div class="stat-value">{{ $adminStats['overdue_projects'] ?? 0 }}</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-description">Past their due date</div>
             </div>
         </div>
 
-        <div class="col-md-6 col-lg-3">
-            <div class="stat-card" style="--card-color: #f97316;">
-                <div>
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #f97316, rgba(249, 115, 22, 0.1)); color: #f97316;">
-                        <i class="fas fa-cog"></i>
-                    </div>
-                    <div class="stat-title">Settings</div>
-                    <div class="stat-description">Configure your preferences</div>
+        <!-- Admin Actions -->
+        <div class="section-title">
+            <i class="fas fa-bolt"></i>Quick Actions
+        </div>
+
+        <div class="card-grid">
+            <a href="{{ route('users.index') }}" class="admin-action-card">
+                <div class="admin-action-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--primary);">
+                    <i class="fas fa-users-cog"></i>
                 </div>
-                <a href="{{ route('profile') }}" class="stat-button" style="background: linear-gradient(135deg, #f97316, #ea580c);">
-                    <i class="fas fa-arrow-right me-2"></i>Open
-                </a>
+                <div class="admin-action-title">Manage Users</div>
+                <div class="admin-action-desc">View and manage all users</div>
+            </a>
+
+            <a href="{{ route('projects.index') }}" class="admin-action-card">
+                <div class="admin-action-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <div class="admin-action-title">View Projects</div>
+                <div class="admin-action-desc">Monitor all projects</div>
+            </a>
+
+            <a href="{{ route('analytics') }}" class="admin-action-card">
+                <div class="admin-action-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="admin-action-title">Analytics</div>
+                <div class="admin-action-desc">View system analytics</div>
+            </a>
+
+            <a href="{{ route('financial.index') }}" class="admin-action-card">
+                <div class="admin-action-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--purple);">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="admin-action-title">Financial</div>
+                <div class="admin-action-desc">Manage finances</div>
+            </a>
+        </div>
+
+    @else
+        <!-- USER DASHBOARD -->
+
+        <!-- User Stats -->
+        <div class="section-title">
+            <i class="fas fa-chart-line"></i>Your Statistics
+        </div>
+
+        <div class="card-grid">
+            <div class="stat-card primary">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Active Projects</div>
+                        <div class="stat-value">{{ $stats['active_projects'] ?? 0 }}</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                </div>
+                <div class="stat-description">Projects in progress</div>
+            </div>
+
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Completed</div>
+                        <div class="stat-value">{{ $stats['completed_projects'] ?? 0 }}</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-description">Finished projects</div>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Performance</div>
+                        <div class="stat-value">{{ $stats['completion_rate'] ?? 0 }}%</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                </div>
+                <div class="stat-description">Overall completion rate</div>
+            </div>
+
+            <div class="stat-card info">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Time Tracked</div>
+                        <div class="stat-value">{{ $stats['total_hours'] ?? 0 }}h</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+                <div class="stat-description">Total hours this month</div>
             </div>
         </div>
-    </div>
+
+        <!-- Today's Stats -->
+        <div class="section-title">
+            <i class="fas fa-calendar-day"></i>Today's Activity
+        </div>
+
+        <div class="card-grid">
+            <div class="stat-card purple">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Sessions</div>
+                        <div class="stat-value">{{ $todayStats['sessions'] ?? 0 }}</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-description">Work sessions today</div>
+            </div>
+
+            <div class="stat-card info">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Total Time</div>
+                        <div class="stat-value">{{ $todayStats['total_time'] ?? '0h' }}</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-hourglass-end"></i>
+                    </div>
+                </div>
+                <div class="stat-description">Hours worked today</div>
+            </div>
+
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Avg Session</div>
+                        <div class="stat-value">{{ $todayStats['avg_session'] ?? '0m' }}</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-stopwatch"></i>
+                    </div>
+                </div>
+                <div class="stat-description">Average session duration</div>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Notifications</div>
+                        <div class="stat-value">{{ $stats['unread_notifications'] ?? 0 }}</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                </div>
+                <div class="stat-description">Unread messages</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section-title">
+            <i class="fas fa-bolt"></i>Quick Actions
+        </div>
+
+        <div class="card-grid">
+            <a href="{{ route('projects.create') }}" class="quick-action-btn primary">
+                <i class="fas fa-plus"></i>New Project
+            </a>
+            <a href="{{ route('projects.index') }}" class="quick-action-btn success">
+                <i class="fas fa-tasks"></i>View Projects
+            </a>
+            <a href="{{ route('financial.index') }}" class="quick-action-btn warning">
+                <i class="fas fa-wallet"></i>Financial
+            </a>
+            <a href="{{ route('time-logs.index') }}" class="quick-action-btn info">
+                <i class="fas fa-clock"></i>Time Logs
+            </a>
+        </div>
+
+        <!-- Upcoming Due Projects -->
+        <div class="section-title">
+            <i class="fas fa-calendar-check"></i>Upcoming Due
+        </div>
+
+        <div class="list-card">
+            <div id="upcomingProjects">
+                <div class="empty-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Notifications -->
+        <div class="section-title">
+            <i class="fas fa-bell"></i>Recent Notifications
+        </div>
+
+        <div class="list-card">
+            <div id="recentNotifications">
+                <div class="empty-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading...</p>
+                </div>
+            </div>
+        </div>
+
+    @endif
 </div>
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    @if(!Auth::user()->isAdmin())
     // Load upcoming projects
     function loadUpcomingProjects() {
         fetch('/api/upcoming-projects')
@@ -667,23 +699,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 const container = document.getElementById('upcomingProjects');
                 if (data.projects && data.projects.length > 0) {
                     container.innerHTML = data.projects.map(project => `
-                        <a href="/projects/${project.id}" class="list-item" style="text-decoration: none; color: inherit;">
-                            <div class="list-item-title">${project.name}</div>
-                            <div class="list-item-meta">
-                                <i class="fas fa-calendar me-1"></i>${project.days_remaining} days remaining
-                                <span class="badge-custom ${project.days_remaining <= 1 ? 'badge-danger' : project.days_remaining <= 3 ? 'badge-warning' : 'badge-primary'}" style="float: right;">
+                        <a href="/projects/${project.id}" class="list-item">
+                            <div class="list-item-title">
+                                ${project.name}
+                                <span class="badge ${project.days_remaining <= 1 ? 'badge-danger' : project.days_remaining <= 3 ? 'badge-warning' : 'badge-primary'}">
                                     ${project.days_remaining <= 0 ? 'OVERDUE' : project.days_remaining + 'd'}
                                 </span>
+                            </div>
+                            <div class="list-item-meta">
+                                <i class="fas fa-calendar me-1"></i>${project.days_remaining} days remaining
                             </div>
                         </a>
                     `).join('');
                 } else {
-                    container.innerHTML = '<div class="text-center p-3 text-muted"><i class="fas fa-check-circle"></i> No upcoming due projects</div>';
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No upcoming due projects</p></div>';
                 }
             })
             .catch(error => {
                 console.error('Error loading upcoming projects:', error);
-                document.getElementById('upcomingProjects').innerHTML = '<div class="text-center p-3 text-danger">Error loading projects</div>';
+                document.getElementById('upcomingProjects').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading projects</p></div>';
             });
     }
 
@@ -695,7 +729,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const container = document.getElementById('recentNotifications');
                 if (data.notifications && data.notifications.length > 0) {
                     container.innerHTML = data.notifications.slice(0, 5).map(notification => `
-                        <a href="${notification.project_id ? '/projects/' + notification.project_id : '/notifications'}" class="list-item" style="text-decoration: none; color: inherit;">
+                        <a href="${notification.project_id ? '/projects/' + notification.project_id : '/notifications'}" class="list-item">
                             <div class="list-item-title">${notification.title}</div>
                             <div class="list-item-meta">
                                 <i class="fas fa-clock me-1"></i>${notification.created_at}
@@ -703,12 +737,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         </a>
                     `).join('');
                 } else {
-                    container.innerHTML = '<div class="text-center p-3 text-muted"><i class="fas fa-bell-slash"></i> No notifications</div>';
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>No notifications</p></div>';
                 }
             })
             .catch(error => {
                 console.error('Error loading notifications:', error);
-                document.getElementById('recentNotifications').innerHTML = '<div class="text-center p-3 text-danger">Error loading notifications</div>';
+                document.getElementById('recentNotifications').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading notifications</p></div>';
             });
     }
 
@@ -719,6 +753,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Refresh every 60 seconds
     setInterval(loadUpcomingProjects, 60000);
     setInterval(loadRecentNotifications, 60000);
+    @endif
 });
 </script>
 @endpush
