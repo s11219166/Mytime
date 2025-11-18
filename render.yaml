@@ -43,9 +43,13 @@ services:
           name: mytime-db
           property: password
       - key: SESSION_DRIVER
-        value: cookie
+        value: database
       - key: SESSION_LIFETIME
         value: "1440"
+      - key: SESSION_ENCRYPT
+        value: false
+      - key: SESSION_TABLE
+        value: sessions
       - key: SESSION_SECURE_COOKIE
         value: true
       - key: CACHE_STORE

@@ -70,8 +70,10 @@ RUN echo '#!/bin/bash\n\
 set -e\n\
 echo "Starting application setup..."\n\
 php artisan config:clear\n\
-php artisan migrate --force --no-interaction || echo "Migrations failed but continuing..."\n\
-php artisan db:seed --force --no-interaction || echo "Seeding failed but continuing..."\n\
+echo "Running migrations..."\n\
+php artisan migrate --force --no-interaction 2>&1 || true\n\
+echo "Seeding database..."\n\
+php artisan db:seed --force --no-interaction 2>&1 || true\n\
 php artisan config:cache\n\
 php artisan route:cache\n\
 php artisan view:cache\n\
